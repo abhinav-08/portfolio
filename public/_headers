@@ -1,0 +1,23 @@
+# Cloudflare Pages headers. Copied verbatim into the build output.
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), interest-cohort=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'
+
+# Hashed build assets — immutable.
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Fonts and images are content-stable; revalidate daily.
+/assets/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+# HTML must revalidate so deploys are picked up immediately.
+/
+  Cache-Control: public, max-age=0, must-revalidate
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
