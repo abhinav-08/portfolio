@@ -1,0 +1,35 @@
+/* [project]/app/plexmono_7a95efef.module.css [app-client] (css) */
+@font-face {
+  font-family: plexMono;
+  src: url("../media/ibm_plex_mono_latin_400_normal-s.p.e1d6b3bf.woff2") format("woff2");
+  font-display: swap;
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: plexMono;
+  src: url("../media/ibm_plex_mono_latin_500_normal-s.p.6c2181b8.woff2") format("woff2");
+  font-display: swap;
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: plexMono Fallback;
+  src: local(Arial);
+  ascent-override: 77.95%;
+  descent-override: 20.91%;
+  line-gap-override: 0.0%;
+  size-adjust: 131.49%;
+}
+
+.plexmono_7a95efef-module__YlbAyq__className {
+  font-family: plexMono, plexMono Fallback, ui-monospace, SFMono-Regular, monospace;
+}
+
+.plexmono_7a95efef-module__YlbAyq__variable {
+  --font-plex-mono: "plexMono", "plexMono Fallback", ui-monospace, SFMono-Regular, monospace;
+}
+
+/*# sourceMappingURL=app_plexmono_7a95efef_module_css_bad6b30c._.single.css.map*/

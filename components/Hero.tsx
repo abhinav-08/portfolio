@@ -1,83 +1,15 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { identity, socials } from "@/lib/site";
-import { facts, suggestions } from "@/lib/content";
+import { facts } from "@/lib/content";
+import LiveClock from "@/components/LiveClock";
 import { useReducedMotion } from "@/lib/hooks";
 
 const FULL = "Abhinav Tyagi";
-const SEED = "abhi";
-const GHOST = "nav Tyagi";
-
-/** useLayoutEffect that degrades to useEffect on the server. */
-const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 export default function Hero() {
   const { reduced, ready } = useReducedMotion();
-
-  /* ------------------------------------------------ name autosuggest --
-   * SSR (and the first client render) emit the *finished* state, so the
-   * name is correct without JS and there is no hydration mismatch. A
-   * layout effect rewinds to the empty state before the browser paints,
-   * so the animation starts cleanly with no flash of the final name.
-   */
-  const [typed, setTyped] = useState(FULL);
-  const [ghost, setGhost] = useState("");
-  const [dot, setDot] = useState(".");
-  const [caret, setCaret] = useState(false);
-  const [suggestOpen, setSuggestOpen] = useState(false);
-  const [suggestActive, setSuggestActive] = useState(-1);
-  const rewound = useRef(false);
-
-  useIsoLayoutEffect(() => {
-    if (rewound.current) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    rewound.current = true;
-    setTyped("");
-    setDot("");
-    setCaret(true);
-  }, []);
-
-  useEffect(() => {
-    if (!ready || reduced) return;
-
-    const timers: number[] = [];
-    const at = (ms: number, fn: () => void) => timers.push(window.setTimeout(fn, ms));
-
-    const START = 340;
-    const STEP = 150;
-    const typedAt = START + SEED.length * STEP; // 940ms
-
-    SEED.split("").forEach((_, i) => {
-      at(START + (i + 1) * STEP, () => setTyped(SEED.slice(0, i + 1)));
-    });
-
-    at(typedAt + 220, () => {
-      setGhost(GHOST);
-      setSuggestOpen(true);
-    });
-    at(typedAt + 900, () => setSuggestActive(0));
-    at(typedAt + 1700, () => {
-      setTyped(FULL);
-      setGhost("");
-      setDot(".");
-      setCaret(false);
-      setSuggestOpen(false);
-      setSuggestActive(-1);
-    });
-
-    return () => timers.forEach(clearTimeout);
-  }, [ready, reduced]);
-
-  /* ------------------------------------------------------- live clock */
-  const [time, setTime] = useState("");
-  useEffect(() => {
-    const tick = () =>
-      setTime(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
-    tick();
-    const id = window.setInterval(tick, 30_000);
-    return () => window.clearInterval(id);
-  }, []);
 
   /* ----------------------------------------------------- magnetic CTA */
   const ctaRef = useRef<HTMLAnchorElement>(null);
@@ -110,37 +42,23 @@ export default function Hero() {
 
   return (
     <section className="hero" id="top">
-      <div>
+      {/* Three blocks, not two columns. On mobile the portrait used to come
+          first and pushed the name off the first screen; splitting the copy
+          lets the name lead there while desktop keeps the same two-column
+          composition via explicit grid placement. */}
+      <div className="hero__head">
         <p className="eyebrow hero__eyebrow">
           <span className="rule-inline" aria-hidden="true" />
           Backend &amp; Search Engineer · Gurugram, IN
         </p>
 
-        <div className="hero__name-wrap">
-          <h1 className="hero__name" aria-label={FULL}>
-            <span aria-hidden="true">
-              {typed}
-              <span className="hero__ghost">{ghost}</span>
-              <span className="accent">{dot}</span>
-              {caret && <span className="hero__caret" />}
-            </span>
-          </h1>
+        <h1 className="hero__name">
+          {FULL}
+          <span className="accent">.</span>
+        </h1>
+      </div>
 
-          {suggestOpen && (
-            <div className="suggest" aria-hidden="true">
-              {suggestions.map((s, i) => (
-                <div
-                  key={s}
-                  className={`suggest__row${i === suggestActive ? " is-active" : ""}`}
-                >
-                  <span className="suggest__glyph">⌕</span>
-                  <span>{s}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
+      <div className="hero__body">
         <p className="hero__lede">
           I teach machines what people <em>mean</em> — not just what they type. Five years of
           search platforms and ranking models that stay calm at 25K requests a minute.
@@ -196,9 +114,17 @@ export default function Hero() {
           </picture>
         </div>
 
+        {/* A drawn 1px element, not a border-top — borders can't be animated
+            from zero width, and this one doubles as the minute sweep's track. */}
+        <div className="hero__rule" aria-hidden="true">
+          <span className="hero__sweep" id="hero-sweep" />
+        </div>
+
         <div className="portrait__meta">
-          <span>Local time — {time || "--:--"}</span>
-          <span>{identity.coords}</span>
+          <span className="hero__meta-l">
+            Local time — <LiveClock />
+          </span>
+          <span className="hero__meta-r">{identity.coords}</span>
         </div>
 
         {/* One line, values only. The BASED / TRADE / STACK / BELIEF labels are

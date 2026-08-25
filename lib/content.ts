@@ -126,14 +126,6 @@ export const roles: Role[] = [
   },
 ];
 
-/* ---------------------------------------------------------------- hero */
-
-export const suggestions = [
-  "abhinav tyagi — backend & search engineer",
-  "abhinav tyagi · elasticsearch relevance",
-  "abhinav tyagi resume",
-];
-
 /* ------------------------------------------------------ search console */
 
 export interface DemoRow {

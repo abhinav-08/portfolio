@@ -7,14 +7,8 @@ import Stats from "@/components/Stats";
 import Experience from "@/components/Experience";
 import Reveal from "@/components/Reveal";
 import ScrollFx from "@/components/ScrollFx";
-import {
-  Footer,
-  Instagram,
-  Lab,
-  Skills,
-  Talks,
-  Writing,
-} from "@/components/Sections";
+import HeroBreath from "@/components/HeroBreath";
+import { Footer, Instagram, Lab, Skills, Talks, Writing } from "@/components/Sections";
 
 export default function Page() {
   return (
@@ -43,6 +37,7 @@ export default function Page() {
 
       <Reveal />
       <ScrollFx />
+      <HeroBreath />
     </>
   );
 }

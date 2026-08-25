@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 1, "column": 0}, "map": {"version":3,"sources":["turbopack:///[project]/app/plexmono_7a95efef.module.css"],"sourcesContent":["@font-face {\n    font-family: 'plexMono';\n    src: url('@vercel/turbopack-next/internal/font/local/font?{%22path%22:%22./fonts/ibm-plex-mono-latin-400-normal.woff2%22,%22preload%22:true,%22has_size_adjust%22:true}') format('woff2');\n    font-display: swap;\n    font-weight: 400;font-style: normal;\n}\n@font-face {\n    font-family: 'plexMono';\n    src: url('@vercel/turbopack-next/internal/font/local/font?{%22path%22:%22./fonts/ibm-plex-mono-latin-500-normal.woff2%22,%22preload%22:true,%22has_size_adjust%22:true}') format('woff2');\n    font-display: swap;\n    font-weight: 500;font-style: normal;\n}\n\n@font-face {\n    font-family: 'plexMono Fallback';\n    src: local(\"Arial\");\n    ascent-override: 77.95%;\ndescent-override: 20.91%;\nline-gap-override: 0.00%;\nsize-adjust: 131.49%;\n\n}\n\n.className {\n    font-family: 'plexMono', 'plexMono Fallback', ui-monospace, SFMono-Regular, monospace;\n    \n}\n.variable {\n    --font-plex-mono: 'plexMono', 'plexMono Fallback', ui-monospace, SFMono-Regular, monospace;\n}\n\n"],"names":[],"mappings":"AAAA;;;;;;;;AAMA;;;;;;;;AAOA;;;;;;;;;AAUA;;;;AAIA"}}]
+}

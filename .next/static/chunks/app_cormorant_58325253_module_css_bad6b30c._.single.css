@@ -1,0 +1,67 @@
+/* [project]/app/cormorant_58325253.module.css [app-client] (css) */
+@font-face {
+  font-family: cormorant;
+  src: url("../media/cormorant_garamond_latin_400_normal-s.p.fe49eedf.woff2") format("woff2");
+  font-display: swap;
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: cormorant;
+  src: url("../media/cormorant_garamond_latin_400_italic-s.p.0f9ba7f9.woff2") format("woff2");
+  font-display: swap;
+  font-weight: 400;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: cormorant;
+  src: url("../media/cormorant_garamond_latin_500_normal-s.p.0bab63ba.woff2") format("woff2");
+  font-display: swap;
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: cormorant;
+  src: url("../media/cormorant_garamond_latin_500_italic-s.p.b0f7a7bc.woff2") format("woff2");
+  font-display: swap;
+  font-weight: 500;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: cormorant;
+  src: url("../media/cormorant_garamond_latin_600_normal-s.p.6c2e5abc.woff2") format("woff2");
+  font-display: swap;
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: cormorant;
+  src: url("../media/cormorant_garamond_latin_600_italic-s.p.6095000a.woff2") format("woff2");
+  font-display: swap;
+  font-weight: 600;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: cormorant Fallback;
+  src: local(Times New Roman);
+  ascent-override: 96.16%;
+  descent-override: 29.87%;
+  line-gap-override: 0.0%;
+  size-adjust: 96.09%;
+}
+
+.cormorant_58325253-module___cLjMa__className {
+  font-family: cormorant, cormorant Fallback, Georgia, Times New Roman, serif;
+}
+
+.cormorant_58325253-module___cLjMa__variable {
+  --font-cormorant: "cormorant", "cormorant Fallback", Georgia, Times New Roman, serif;
+}
+
+/*# sourceMappingURL=app_cormorant_58325253_module_css_bad6b30c._.single.css.map*/

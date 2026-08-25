@@ -53,6 +53,8 @@ Edits to any file hot-reload in the browser. Ctrl-C to stop.
 | `components/` | One file per section, plus `Reveal` (scroll reveals), `ScrollFx` (progress bar + hero parallax) and `Icon` (inline brand glyphs). |
 | `lib/icon-paths.ts` | **Generated.** Brand SVG paths extracted from Simple Icons at authoring time. Regenerate with `node gen-icons.mjs`. |
 | `lib/sections.ts` | Derived section numbering — see Page order below. |
+| `components/HeroBreath.tsx` | Concept D — the ambient respiration loop. |
+| `components/LiveClock.tsx` | Gurugram clock, minute roll, and the sweep that drives the hairline. |
 | `public/_headers` | Cloudflare Pages security headers and cache policy. |
 
 ### Why plain CSS instead of Tailwind utilities
@@ -104,23 +106,79 @@ entries and delete the `placeholder: true` line.
 - [ ] Re-check the OG image (`public/assets/og.png`) renders well in
       LinkedIn/X preview tools.
 
+## Hero motion (concepts B + D)
+
+From the *Portrait Hero Motion* handoff. It shipped four concepts and
+recommended two; A (scroll parallax) and C (pointer-tracked light) are not
+implemented.
+
+**B — page-load reveal.** One orchestrated entrance. Every delay is a CSS
+custom property on `:root` (`--rv-bar`, `--rv-glow`, `--rv-portrait`,
+`--rv-rule`, `--rv-meta-l`, `--rv-meta-r`, `--rv-bio`, `--rv-cta`,
+`--rv-social`) so the sequence is retimed in one place. Pure CSS — nothing on
+the JS critical path.
+
+The glow *leads* the portrait rather than following it, so the wipe reads as
+the subject stepping into the light. The portrait wipes **bottom-up**
+(`clip-path: inset(100% 0 0 0)` → `inset(0)`) with `transform-origin: 50%
+100%`, so it settles from the feet and reads as rising into place. The
+metadata hairline is a real 1px element with a `scaleX` animation, not a
+`border-top` — borders cannot be drawn from zero.
+
+**D — ambient respiration.** `HeroBreath.tsx` runs one rAF loop. The glow field
+breathes on an asymmetric curve (inhale 34%, brief hold, longer exhale) with a
+period that wanders ~5.0–5.9s, driven by a phase accumulator rather than
+`time % period` so the period can change without a discontinuity. The "open to
+work" dot breathes anti-phase at a third of the amplitude on the same clock.
+The loop is parked by `IntersectionObserver` *and* `visibilitychange`, and
+drops its `will-change` hint while parked.
+
+Only `transform` and `opacity` are written per frame — no `filter`,
+`box-shadow` or `background-position` in any loop.
+
+`prefers-reduced-motion: reduce` holds the glow mid-breath (`scale(1.018)`),
+freezes the dot, and skips every entrance animation. The clock stays live and
+correct; only its roll is suppressed.
+
+### Deviations from that handoff, and why
+
+- **The clock is Asia/Kolkata, not the visitor's locale.** It sits beside
+  `28.4595° N, 77.0266° E`, so the pair has to read as time-at-that-place.
+- **Our hero has elements the handoff's reconstruction doesn't** (the lede,
+  CTAs and social row). They ride the same cadence at 880 / 980 / 1080ms, so
+  the sequence runs ~1640ms rather than the handoff's 1180ms.
+- **The eyebrow reveals early, with the top bar.** The handoff has that copy as
+  a *footer* label at 1120ms; ours is the first line on the page and animating
+  it last looked broken.
+- **`img.decode()` gating was not added.** The portrait is preloaded as WebP
+  with `fetchPriority="high"`, which closes the window the handoff warns about.
+  The source is 1097px wide, inside its ~1200px `clip-path` budget.
+- **`.glow--4` lost its CSS `breathe`.** The whole field respires now; two
+  breathing rhythms at once read as a wobble.
+
 ## Design notes worth preserving
 
 - The hero portrait's four shadow layers (`portrait__bloom` / `__pool` /
   `__mid` / `__line`) exist because the subject's forearms rest on a surface
   that the background removal deleted. Without them the pose floats. They are
   sized in percentages so the effect survives resizing.
-- `.hero__name` keeps `min-height: 2em` and `padding-bottom: 0.1em`: the first
-  reserves room for the autosuggest dropdown so opening it never shifts the
-  page, the second stops the descender on "Tyagi" from clipping.
+- `.hero__name` keeps `padding-bottom: 0.1em` so the descender on "Tyagi"
+  doesn't clip. It no longer carries `min-height: 2em` — that only existed to
+  reserve room for the autosuggest dropdown, which has been removed; the name
+  now renders directly.
 - The portrait's `translateY(-8%)` base offset is *combined with* scroll
   parallax in `ScrollFx.tsx`, not replaced by it.
 - The experience drawer is portalled to `<body>`. `.shell` sets `z-index: 1`,
   which would otherwise trap the drawer's `z-index: 70` beneath the fixed
   header.
-- The hero fact sheet is label/value rows, not the `.cellgrid` cells the
-  Essence section used. Four stacked cells under the portrait made the hero's
-  right column overrun the copy on the left by ~300px.
+- The hero is three grid blocks (`head` / `body` / `figure`), not two columns.
+  Source order keeps the copy together; desktop places them explicitly and
+  mobile reorders to head → figure → body so the name lands on the first
+  screen. Rows are `auto 1fr` with the body `align-self: start` — the figure
+  spans both rows and would otherwise inflate row 1.
+- The hero fact sheet is a single line, not the `.cellgrid` cells the Essence
+  section used. Four stacked cells under the portrait made the hero's right
+  column overrun the copy on the left by ~300px.
 - Marquee and carousel duplicate their item lists exactly twice and translate
   by half the track **plus half a gap** — 2N items carry only 2N−1 gaps, so a
   plain −50% leaves a visible seam.
