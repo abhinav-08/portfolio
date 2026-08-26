@@ -128,8 +128,7 @@ export default function SearchConsole() {
         </p>
         <h2 className="searchband__head" data-reveal="80">
           I&rsquo;m not a list of frameworks. I&rsquo;m the person who needs to know{" "}
-          <span className="accent">why</span> the third result outranked the first — and
-          can&rsquo;t sleep until it doesn&rsquo;t.
+          <span className="accent">why</span> the third result outranked the first.
         </h2>
         <p className="searchband__sub" data-reveal="140">
           Search sits where language meets systems, and that&rsquo;s exactly where I like to
