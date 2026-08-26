@@ -6,6 +6,14 @@ import { roles, type Role } from "@/lib/content";
 import { num } from "@/lib/sections";
 import { useMounted } from "@/lib/hooks";
 
+/** Node diameters, newest first. Position is derived from these. */
+const NODE_SIZES = [11, 7, 7, 5];
+
+/** First four-digit year in a period string — the year the role began. */
+function startYear(period: string): string {
+  return period.match(/\d{4}/)?.[0] ?? "";
+}
+
 export default function Experience() {
   const [open, setOpen] = useState<Role | null>(null);
   const triggers = useRef(new Map<string, HTMLButtonElement>());
@@ -25,37 +33,75 @@ export default function Experience() {
           <span className="rule-inline" aria-hidden="true" />
           {num("experience")} — Experience
         </p>
-        <p className="exp__hint">Click a role for the full story</p>
+        <p className="exp__hint">Four roles · one rail</p>
       </div>
 
-      {roles.map((r, i) => (
-        <button
-          type="button"
-          className="role"
-          key={r.id}
-          data-reveal={i * 60}
-          onClick={() => setOpen(r)}
-          aria-haspopup="dialog"
-          aria-label={`${r.company} — ${r.title}, ${r.period}. Open full details.`}
-          ref={(el) => {
-            if (el) triggers.current.set(r.id, el);
-            else triggers.current.delete(r.id);
-          }}
-        >
-          <span className="role__index" aria-hidden="true">
-            {r.index}
-          </span>
-          <span>
-            <span className="role__company">{r.company}</span>
-            <span className="role__title">{r.title}</span>
-          </span>
-          <span className="role__blurb">{r.blurb}</span>
-          <span className="role__period">{r.period}</span>
-          <span className="role__chevron" aria-hidden="true">
-            →
-          </span>
-        </button>
-      ))}
+      {/* "The Spine": the roles hang off one gold rail that dims into the
+          past. Type size, copy opacity and node weight all descend with age,
+          so seniority reads as physical presence rather than as a label. */}
+      <div className="spine">
+        <span className="spine__rail" data-reveal="0" aria-hidden="true" />
+
+        {roles.map((r, i) => (
+          <button
+            type="button"
+            className="spine__role"
+            key={r.id}
+            data-reveal={i * 90}
+            /* Node diameter drives its own centring — see the calc() in the
+               stylesheet. Hand-copied offsets would drift at every breakpoint
+               where the rail moves. */
+            style={{ ["--node" as string]: `${NODE_SIZES[i] ?? 5}px` }}
+            onClick={() => setOpen(r)}
+            aria-haspopup="dialog"
+            aria-label={`${r.company}, ${r.title}, ${r.period} — open details`}
+            ref={(el) => {
+              if (el) triggers.current.set(r.id, el);
+              else triggers.current.delete(r.id);
+            }}
+          >
+            <span className="spine__year" aria-hidden="true">
+              {startYear(r.period)}
+            </span>
+            <span className="spine__node" aria-hidden="true" />
+
+            <span className="spine__namerow">
+              <span className="spine__company">{r.company}</span>
+              {i === 0 && (
+                <span className="spine__now" aria-hidden="true">
+                  <span className="spine__now-dot" />
+                  Now
+                </span>
+              )}
+            </span>
+
+            <span className="spine__meta">
+              {r.title} · {r.period}
+            </span>
+            <span className="spine__blurb">{r.blurb}</span>
+
+            {/* The "+" reads as "there is more behind this" — it is half the
+                click affordance, the cue below is the other half. */}
+            <span className="spine__chips">
+              {r.highlights.map((h) => (
+                <span className="spine__chip" key={h}>
+                  <span className="spine__chip-plus" aria-hidden="true">
+                    +
+                  </span>
+                  {h}
+                </span>
+              ))}
+            </span>
+
+            {/* Nothing else on the block said "clickable" when standing still;
+                hover-only affordances don't exist on touch at all. */}
+            <span className="spine__cue" aria-hidden="true">
+              Full story
+              <span className="spine__cue-arrow">→</span>
+            </span>
+          </button>
+        ))}
+      </div>
 
       {/* Portalled to <body>: `.shell` sets z-index 1, which would otherwise
           trap the drawer's z-index 70 beneath the fixed header. */}

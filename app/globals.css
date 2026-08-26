@@ -1021,12 +1021,68 @@ button {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 15px 16px;
+  padding: 13px 16px;
   border-bottom: 1px solid var(--hairline);
+  min-height: 52px;
+}
+
+.panel__input {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: none;
+  padding: 0;
   font-family: var(--font-mono);
   font-size: 14px;
   color: var(--text);
-  min-height: 50px;
+  caret-color: var(--accent);
+}
+.panel__input::placeholder {
+  color: var(--text-32);
+}
+.panel__input:focus {
+  outline: none;
+}
+/* The panel takes the focus ring so the caret isn't boxed in. */
+.panel:focus-within {
+  border-color: var(--accent-40);
+}
+
+.panel__clear {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-40);
+  border: 1px solid var(--hairline);
+  border-radius: 99px;
+  padding: 5px 10px;
+  flex-shrink: 0;
+  transition: color 0.25s ease, border-color 0.25s ease;
+}
+.panel__clear:hover {
+  color: var(--accent);
+  border-color: var(--accent-40);
+}
+
+.panel__nochips {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-32);
+}
+
+.chip__type {
+  color: var(--text-40);
+  margin-right: 6px;
+}
+
+.panel__empty {
+  margin: 0;
+  padding: 18px 16px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--text-40);
 }
 
 .panel__glyph {
@@ -1077,9 +1133,9 @@ button {
 
 .panel__results {
   position: relative;
-  height: 246px;
   padding: 10px 0;
   border-bottom: 1px solid var(--hairline);
+  transition: height 0.45s var(--ease);
 }
 
 .result {
@@ -1087,14 +1143,90 @@ button {
   top: 10px;
   left: 0;
   right: 0;
+  transition: transform 0.6s var(--ease);
+  will-change: transform;
+}
+
+.result__head {
+  width: 100%;
   height: 74px;
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) 54px 40px;
+  grid-template-columns: 28px minmax(0, 1fr) 54px 40px 16px;
   gap: 10px;
   align-items: center;
   padding: 0 16px;
-  transition: transform 0.75s var(--ease);
-  will-change: transform;
+  text-align: left;
+  transition: background 0.3s ease;
+}
+
+@media (hover: hover) {
+  .result__head:hover {
+    background: var(--hover-wash);
+  }
+}
+
+.result.is-demoted .result__title,
+.result.is-demoted .result__thumb {
+  opacity: 0.55;
+}
+
+.result__caret {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-35);
+  text-align: right;
+}
+.result.is-open .result__caret {
+  color: var(--accent);
+}
+
+.result__size {
+  color: var(--text-40);
+  font-weight: 400;
+}
+
+/* ---- per-signal score breakdown ---- */
+
+.breakdown {
+  padding: 2px 16px 14px 54px;
+  animation: fade 0.3s ease;
+}
+
+.breakdown__row {
+  display: grid;
+  grid-template-columns: minmax(0, 150px) 1fr 52px;
+  gap: 10px;
+  align-items: center;
+  height: 21px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+.breakdown__label {
+  color: var(--text-45);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.breakdown__track {
+  height: 2px;
+  background: var(--hairline);
+}
+
+.breakdown__bar {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+.breakdown__bar.is-neg {
+  background: rgba(196, 106, 90, 0.85);
+}
+
+.breakdown__val {
+  text-align: right;
+  color: var(--text-40);
+  font-variant-numeric: tabular-nums;
 }
 
 .result__rank {
@@ -1255,73 +1387,281 @@ button {
   color: var(--text-40);
 }
 
-.role {
-  display: grid;
-  width: 100%;
-  text-align: left;
-  grid-template-columns: 70px 1.1fr 1.4fr auto;
-  gap: 32px;
-  align-items: baseline;
-  padding: 38px 8px;
-  border-top: 1px solid var(--hairline);
-  transition:
-    padding-left 0.4s var(--ease),
-    background 0.4s var(--ease);
+/* ---- The Spine: one gold rail, roles receding into the past ---- */
+
+.spine {
+  position: relative;
+  /* Both are read by the node/year positioning below, so a breakpoint only
+     has to move these two values. */
+  --spine-pad: 132px;
+  --rail-x: 60px;
+  padding-left: var(--spine-pad);
 }
 
-.role:last-of-type {
-  border-bottom: 1px solid var(--hairline);
+.spine__rail {
+  position: absolute;
+  left: var(--rail-x);
+  top: 8px;
+  bottom: 8px;
+  width: 1px;
+  background: linear-gradient(rgba(200, 169, 110, 0.7), rgba(200, 169, 110, 0.18));
+}
+
+/* The rail draws itself downward instead of fading in. Overrides the generic
+   [data-reveal] treatment; the reduced-motion block neutralises it. */
+.spine__rail[data-reveal] {
+  opacity: 1;
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 1.2s var(--ease);
+}
+.spine__rail[data-reveal].is-revealed {
+  transform: scaleY(1);
+}
+
+.spine__role {
+  position: relative;
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0 0 56px;
+  transition:
+    transform 0.4s var(--ease),
+    opacity 0.35s ease;
+}
+.spine__role:last-of-type {
+  padding-bottom: 0;
 }
 
 @media (hover: hover) {
-  .role:hover {
-    padding-left: 28px;
-    background: var(--hover-wash);
+  .spine__role:hover {
+    transform: translateX(6px);
+  }
+  /* The hovered entry steps forward out of the fade. */
+  .spine__role:hover .spine__blurb,
+  .spine__role:hover .spine__meta {
+    opacity: 1;
+  }
+  .spine__role:hover .spine__node {
+    background: var(--accent);
+  }
+  .spine__role:hover .spine__chip {
+    border-color: var(--accent-40);
+    color: var(--accent);
+  }
+  .spine__role:hover .spine__cue {
+    color: var(--accent);
+    border-color: var(--accent-40);
+  }
+  .spine__role:hover .spine__cue-arrow {
+    transform: translateX(4px);
   }
 }
+.spine__role:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 6px;
+}
 
-.role__index {
+.spine__year {
+  position: absolute;
+  left: calc(-1 * var(--spine-pad));
+  top: 10px;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
   color: var(--text-35);
 }
 
-.role__company {
-  display: block;
-  font-family: var(--font-serif);
-  font-size: clamp(26px, 2.8vw, 38px);
-  font-weight: 500;
-  line-height: 1.1;
+/* Centre of the dot lands on the rail whatever its diameter — the offset is
+   derived, not hand-tuned, so it survives the breakpoints that move the rail. */
+.spine__node {
+  position: absolute;
+  left: calc(var(--rail-x) - var(--spine-pad) - (var(--node) / 2));
+  top: 14px;
+  width: var(--node);
+  height: var(--node);
+  border-radius: 50%;
+  background: rgba(234, 228, 216, 0.32);
+  transition: background 0.25s ease;
 }
 
-.role__title {
+/* Newest role: gold year, haloed node. */
+.spine__role:nth-of-type(1) .spine__year {
+  color: var(--accent);
+}
+.spine__role:nth-of-type(1) .spine__node {
+  top: 12px;
+  background: var(--accent);
+  box-shadow: 0 0 0 5px rgba(200, 169, 110, 0.16);
+}
+.spine__role:nth-of-type(2) .spine__node {
+  background: rgba(234, 228, 216, 0.45);
+}
+.spine__role:nth-of-type(3) .spine__year {
+  color: rgba(234, 228, 216, 0.3);
+}
+.spine__role:nth-of-type(3) .spine__node {
+  background: rgba(234, 228, 216, 0.35);
+}
+.spine__role:nth-of-type(4) .spine__year {
+  color: rgba(234, 228, 216, 0.28);
+}
+.spine__role:nth-of-type(4) .spine__node {
+  background: rgba(234, 228, 216, 0.28);
+}
+
+.spine__namerow {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.spine__company {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  line-height: 1.05;
+  font-size: 28px;
+}
+.spine__role:nth-of-type(1) .spine__company {
+  font-size: 42px;
+}
+.spine__role:nth-of-type(2) .spine__company {
+  font-size: 36px;
+}
+.spine__role:nth-of-type(3) .spine__company {
+  font-size: 32px;
+}
+
+.spine__now {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--accent-40);
+  border-radius: 99px;
+  padding: 4px 11px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.spine__now-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 2.2s ease-in-out infinite;
+}
+
+.spine__meta {
   display: block;
+  margin-top: 9px;
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+  color: rgba(200, 169, 110, 0.6);
+  transition: opacity 0.35s ease;
+}
+.spine__role:nth-of-type(1) .spine__meta {
   color: var(--accent);
-  margin-top: 8px;
+}
+.spine__role:nth-of-type(2) .spine__meta {
+  color: rgba(200, 169, 110, 0.8);
+}
+.spine__role:nth-of-type(3) .spine__meta {
+  color: rgba(200, 169, 110, 0.7);
 }
 
-.role__blurb {
+/* Opacity floor is 0.45 — ~7:1 on the page background. Do not fade further. */
+.spine__blurb {
   display: block;
-  font-size: 14.5px;
-  line-height: 1.65;
-  color: var(--text-60);
+  margin-top: 14px;
+  max-width: 620px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: rgba(234, 228, 216, 0.45);
+  transition: opacity 0.35s ease;
+}
+.spine__role:nth-of-type(1) .spine__blurb {
+  color: rgba(234, 228, 216, 0.62);
+}
+.spine__role:nth-of-type(2) .spine__blurb {
+  color: rgba(234, 228, 216, 0.55);
+}
+.spine__role:nth-of-type(3) .spine__blurb {
+  color: rgba(234, 228, 216, 0.5);
 }
 
-.role__period {
+/* ---- capability chips ---- */
+
+.spine__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.spine__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(200, 169, 110, 0.34);
+  border-radius: 99px;
+  padding: 7px 15px;
   font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--text-35);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: rgba(200, 169, 110, 0.85);
   white-space: nowrap;
+  transition:
+    border-color 0.3s ease,
+    color 0.3s ease;
 }
 
-.role__chevron {
-  display: none;
+.spine__chip-plus {
+  color: rgba(200, 169, 110, 0.6);
+}
+
+/* Chips recede with the rest of the block as the role ages. */
+.spine__role:nth-of-type(2) .spine__chip {
+  border-color: rgba(200, 169, 110, 0.26);
+  color: rgba(200, 169, 110, 0.7);
+}
+.spine__role:nth-of-type(3) .spine__chip {
+  border-color: rgba(200, 169, 110, 0.2);
+  color: rgba(200, 169, 110, 0.6);
+}
+.spine__role:nth-of-type(4) .spine__chip {
+  border-color: rgba(200, 169, 110, 0.16);
+  color: rgba(200, 169, 110, 0.52);
+}
+
+/* ---- the click affordance ---- */
+
+.spine__cue {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
   font-family: var(--font-mono);
-  color: var(--accent);
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(200, 169, 110, 0.75);
+  border-bottom: 1px solid rgba(200, 169, 110, 0.28);
+  padding-bottom: 4px;
+  transition:
+    color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.spine__cue-arrow {
+  display: inline-block;
+  transition: transform 0.3s var(--ease);
 }
 
 /* ============================================================= DRAWER */
@@ -1970,11 +2310,21 @@ button {
   .stats {
     grid-template-columns: repeat(2, 1fr);
   }
-  .role {
-    grid-template-columns: 1.1fr 1.4fr auto;
+  .spine {
+    --spine-pad: 104px;
+    --rail-x: 48px;
   }
-  .role__index {
-    display: none;
+  .spine__role:nth-of-type(1) .spine__company {
+    font-size: 36px;
+  }
+  .spine__role:nth-of-type(2) .spine__company {
+    font-size: 32px;
+  }
+  .spine__role:nth-of-type(3) .spine__company {
+    font-size: 28px;
+  }
+  .spine__role:nth-of-type(4) .spine__company {
+    font-size: 26px;
   }
   .nav {
     gap: 20px;
@@ -2041,6 +2391,37 @@ button {
   }
 }
 
+/* 600–899px: keep the rail but drop the year gutter. */
+@media (min-width: 600px) and (max-width: 899px) {
+  .spine {
+    --spine-pad: 40px;
+    --rail-x: 12px;
+  }
+  .spine__year {
+    display: none;
+  }
+  .spine__node {
+    --node: 7px;
+    top: 13px;
+  }
+  .spine__role:nth-of-type(1) .spine__node {
+    --node: 9px;
+    top: 12px;
+  }
+  .spine__role:nth-of-type(1) .spine__company {
+    font-size: 30px;
+  }
+  .spine__role:nth-of-type(2) .spine__company {
+    font-size: 26px;
+  }
+  .spine__role:nth-of-type(3) .spine__company {
+    font-size: 24px;
+  }
+  .spine__role:nth-of-type(4) .spine__company {
+    font-size: 22px;
+  }
+}
+
 @media (max-width: 767px) {
   :root {
     --gutter: 22px;
@@ -2103,30 +2484,38 @@ button {
     flex-direction: column;
     gap: 10px;
   }
-  /* Experience rows become stacked cards with a chevron affordance. */
-  .role {
-    grid-template-columns: 1fr auto;
-    gap: 10px 16px;
-    padding: 26px 4px;
-    align-items: center;
-    min-height: 44px;
+  /* The year gutter goes; the year already lives in the meta line. */
+  .spine {
+    --spine-pad: 28px;
+    --rail-x: 6px;
   }
-  .role__company {
-    font-size: 26px;
+  .spine__year {
+    display: none;
   }
-  .role__period {
-    grid-column: 1;
-    order: 3;
+  .spine__node {
+    top: 12px;
   }
-  .role__blurb {
-    grid-column: 1 / -1;
-    order: 4;
-    font-size: 14px;
+  .spine__role {
+    padding-bottom: 44px;
   }
-  .role__chevron {
-    display: block;
-    grid-column: 2;
-    grid-row: 1;
+  .spine__company,
+  .spine__role:nth-of-type(1) .spine__company,
+  .spine__role:nth-of-type(2) .spine__company,
+  .spine__role:nth-of-type(3) .spine__company,
+  .spine__role:nth-of-type(4) .spine__company {
+    font-size: clamp(24px, 7vw, 30px);
+  }
+  .spine__blurb {
+    font-size: 14.5px;
+  }
+  .spine__chip {
+    font-size: 10.5px;
+    padding: 6px 12px;
+    gap: 6px;
+  }
+  .spine__chips {
+    gap: 8px;
+    margin-top: 15px;
   }
   .section {
     padding-bottom: 90px;
@@ -2169,16 +2558,17 @@ button {
     flex-direction: column;
     gap: 12px;
   }
-  .panel__results {
-    height: 300px;
-  }
-  .result {
-    height: 90px;
-  }
-  .result {
-    grid-template-columns: 22px minmax(0, 1fr) 40px 36px;
+  .result__head {
+    height: 92px;
+    grid-template-columns: 22px minmax(0, 1fr) 40px 36px 14px;
     gap: 8px;
     padding: 0 12px;
+  }
+  .breakdown {
+    padding-left: 12px;
+  }
+  .breakdown__row {
+    grid-template-columns: minmax(0, 110px) 1fr 46px;
   }
   .ig__tile {
     width: 160px;
@@ -2261,6 +2651,7 @@ button {
   .glow,
   .grain,
   .pill-work__dot,
+  .spine__now-dot,
   .marquee__track,
   .ig__track,
   .pill-work::before,
@@ -2304,8 +2695,17 @@ button {
     transform: none !important;
     transition: none !important;
   }
+  /* `transform: none` resolves the rail to its full height — no draw-in. */
 
+  .spine__role,
+  .spine__node,
+  .spine__chip,
+  .spine__cue,
+  .spine__cue-arrow,
+  .spine__blurb,
+  .spine__meta,
   .result,
+  .panel__results,
   .result__fill,
   .role,
   .skill,

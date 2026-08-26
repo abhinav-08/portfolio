@@ -106,6 +106,80 @@ entries and delete the `placeholder: true` line.
 - [ ] Re-check the OG image (`public/assets/og.png`) renders well in
       LinkedIn/X preview tools.
 
+## The live search demo
+
+`#search` runs a **real** search engine in the browser over a ~40-product
+catalogue. Nothing about the ranking is canned.
+
+| File | What it does |
+|---|---|
+| `lib/search/catalogue.ts` | Invented product data. `ctr`/`atc` are synthetic demand priors, labelled as such in the UI. |
+| `lib/search/parse.ts` | Rule-based NER — dietary intent, size + unit, price ceiling, pack count, category, brand — plus a light stemmer and synonym expansion. |
+| `lib/search/rank.ts` | BM25 recall over an inverted index, then a weighted rescore. Each signal keeps its own contribution so the UI can show its work. |
+
+Typing runs parse → recall → rescore synchronously and reports the **measured**
+elapsed time (~0.3–0.8ms). Any row expands to show the per-signal breakdown
+that produced its score.
+
+While nobody has touched the input, it auto-types example queries through the
+same engine; the first focus or keystroke hands control over permanently.
+
+### Two things kept honest on purpose
+
+- **Synonym expansion is called synonym expansion, not "semantic".** There are
+  no embeddings here. Overclaiming on a search engineer's own site is the worst
+  possible place to do it.
+- **The "Abhinav Tyagi" result is indexed like any other document.** It only
+  surfaces when the query genuinely matches it ("who built this", "hire",
+  "relevance"). Pinning it to #1 would make the whole demo a lie.
+
+### Two bugs worth remembering
+
+- **Entity spans are consumed before tokenising** (`CONSUMED` in `parse.ts`).
+  Without it, "dairy free" leaves `dairy` in the term stream, where it matches
+  the `dairy` tag on actual dairy milk — so a dairy-free query ranked
+  full-cream milk **first**. Negation swallowed by bag-of-words, which is
+  exactly the failure this page claims to fix.
+- **Only *constraint* spans are consumed, not content words.** Consuming the
+  category span too made "gluten free bread" rank bananas — gluten-free, but
+  not bread.
+
+## Experience — "The Spine"
+
+From the `EXPERIENCE1aSPINE.md` handoff (option 1a). The four roles hang off
+one gold rail that dims into the past: type size (42 → 36 → 32 → 28px), copy
+opacity (0.62 → 0.45) and node weight all descend with age, so seniority reads
+as physical presence rather than as a label. Only the current role gets a NOW
+pill.
+
+Each role also carries a row of capability chips and a **"Full story →"** cue.
+
+The chips are a new `highlights` field on `Role` — capabilities, not a tech
+list, since the full `stack` is already in the drawer and "Learning-to-Rank"
+says more than "Java". Every chip is grounded in one of that role's bullets.
+
+The cue is the click affordance. Nothing on the block said "clickable" while
+standing still, and the hover treatment does not exist at all on touch. The
+`+` prefix on each chip does the other half of that work. The section header
+hint changed from "Click a role for the full story" to "Four roles · one rail"
+— with a cue on every role, the old wording appeared five times on screen.
+
+The drawer, its data and the full bullet lists are unchanged.
+
+**Node positions are derived, not hand-tuned.** The spec listed pixel offsets
+but asked for programmatic centring if refactored, so `.spine` exposes
+`--spine-pad` and `--rail-x` and each node is placed with
+`calc(var(--rail-x) - var(--spine-pad) - var(--node) / 2)`. A breakpoint only
+has to move those two values; verified the node centres stay on the rail
+(within half a pixel) at 1440 / 1100 / 800 / 480 / 360px.
+
+The rail draws itself downward on reveal by overriding the generic
+`[data-reveal]` treatment with a `scaleY` transition. Under reduced motion the
+global `transform: none` resolves it to full height, so it simply appears.
+
+The `0.45` opacity floor on the oldest blurb is deliberate — roughly 7:1 on the
+page background. Do not fade further.
+
 ## Hero motion (concepts B + D)
 
 From the *Portrait Hero Motion* handoff. It shipped four concepts and

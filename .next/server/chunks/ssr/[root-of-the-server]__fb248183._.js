@@ -209,6 +209,14 @@ const roles = [
         period: "Apr 2025 — Present",
         location: "Gurugram, India",
         blurb: "Architecture and backend ownership of the customer-facing search platform — 25K+ requests per minute across a catalogue of nearly 10 million products.",
+        highlights: [
+            "Learning-to-Rank",
+            "XGBoost",
+            "Vector search",
+            "NER query parsing",
+            "LLM tooling",
+            "Kafka · Event Hub"
+        ],
         bullets: [
             "Led architecture and backend ownership of the customer-facing search platform handling 25K+ RPM — low-latency Elasticsearch querying, real-time stock validation, pricing computation, marketplace-retail aggregation, voucher applicability and geo/store-aware availability.",
             "Built a Learning-to-Rank framework using XGBoost/XGBRanker with lexical, semantic, category, brand, popularity, CTR, ATCR and order-rate signals, integrated into Elasticsearch rescore pipelines.",
@@ -241,6 +249,14 @@ const roles = [
         period: "May 2023 — May 2025",
         location: "Gurugram, India",
         blurb: "Owned hotel search and discovery — a major Elasticsearch migration, a latency overhaul, and autosuggest built from scratch.",
+        highlights: [
+            "Elasticsearch 6 → 8",
+            "Autosuggest from scratch",
+            "−40% latency",
+            "Redis caching",
+            "Ranking & reviews",
+            "Channel managers"
+        ],
         bullets: [
             "Led migration of large-scale Elasticsearch infrastructure from 6.x to 8.x with minimal external dependency and zero major production disruption.",
             "Optimised hotel search architecture and Redis-backed caching strategies, reducing average search latency by nearly 40–50%.",
@@ -268,6 +284,14 @@ const roles = [
         period: "Oct 2021 — May 2023",
         location: "Noida, India",
         blurb: "Fintech platforms for invoice discounting and channel financing — microservices, integrations and analytics.",
+        highlights: [
+            "Invoice discounting",
+            "Microservices",
+            "ES analytics dashboards",
+            "Kanban platform",
+            "Rate-limited middleware",
+            "AWS S3 · SQS"
+        ],
         bullets: [
             "Contributed to fintech platforms enabling invoice discounting and channel financing services.",
             "Designed microservices for WhatsApp notifications, document management, reporting and Elasticsearch-powered analytics dashboards.",
@@ -293,6 +317,14 @@ const roles = [
         period: "Aug 2020 — Sep 2021",
         location: "Pune, India",
         blurb: "Full-stack and observability engineering for enterprise clients — where I learned to read heap dumps like tea leaves.",
+        highlights: [
+            "Dynatrace → Grafana",
+            "InfluxDB pipelines",
+            "OpenTelemetry",
+            "Memory-leak analysis",
+            "API mocking",
+            "React · Angular"
+        ],
         bullets: [
             "Worked as a full-stack developer using Java, Spring Boot, React and Angular.",
             "Developed integration frameworks connecting Dynatrace with Grafana through InfluxDB for enterprise observability.",

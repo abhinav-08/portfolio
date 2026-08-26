@@ -13,6 +13,12 @@ export interface Role {
   period: string;
   location: string;
   blurb: string;
+  /**
+   * 5–6 capability chips shown on the spine. Deliberately capabilities, not a
+   * tech list — the full `stack` is already in the drawer, and "Learning-to-Rank"
+   * says more than "Java". Every one is grounded in a bullet below.
+   */
+  highlights: string[];
   bullets: string[];
   stack: string[];
 }
@@ -27,6 +33,14 @@ export const roles: Role[] = [
     location: "Gurugram, India",
     blurb:
       "Architecture and backend ownership of the customer-facing search platform — 25K+ requests per minute across a catalogue of nearly 10 million products.",
+    highlights: [
+      "Learning-to-Rank",
+      "XGBoost",
+      "Vector search",
+      "NER query parsing",
+      "LLM tooling",
+      "Kafka · Event Hub",
+    ],
     bullets: [
       "Led architecture and backend ownership of the customer-facing search platform handling 25K+ RPM — low-latency Elasticsearch querying, real-time stock validation, pricing computation, marketplace-retail aggregation, voucher applicability and geo/store-aware availability.",
       "Built a Learning-to-Rank framework using XGBoost/XGBRanker with lexical, semantic, category, brand, popularity, CTR, ATCR and order-rate signals, integrated into Elasticsearch rescore pipelines.",
@@ -60,6 +74,14 @@ export const roles: Role[] = [
     location: "Gurugram, India",
     blurb:
       "Owned hotel search and discovery — a major Elasticsearch migration, a latency overhaul, and autosuggest built from scratch.",
+    highlights: [
+      "Elasticsearch 6 → 8",
+      "Autosuggest from scratch",
+      "−40% latency",
+      "Redis caching",
+      "Ranking & reviews",
+      "Channel managers",
+    ],
     bullets: [
       "Led migration of large-scale Elasticsearch infrastructure from 6.x to 8.x with minimal external dependency and zero major production disruption.",
       "Optimised hotel search architecture and Redis-backed caching strategies, reducing average search latency by nearly 40–50%.",
@@ -88,6 +110,14 @@ export const roles: Role[] = [
     location: "Noida, India",
     blurb:
       "Fintech platforms for invoice discounting and channel financing — microservices, integrations and analytics.",
+    highlights: [
+      "Invoice discounting",
+      "Microservices",
+      "ES analytics dashboards",
+      "Kanban platform",
+      "Rate-limited middleware",
+      "AWS S3 · SQS",
+    ],
     bullets: [
       "Contributed to fintech platforms enabling invoice discounting and channel financing services.",
       "Designed microservices for WhatsApp notifications, document management, reporting and Elasticsearch-powered analytics dashboards.",
@@ -106,6 +136,14 @@ export const roles: Role[] = [
     location: "Pune, India",
     blurb:
       "Full-stack and observability engineering for enterprise clients — where I learned to read heap dumps like tea leaves.",
+    highlights: [
+      "Dynatrace → Grafana",
+      "InfluxDB pipelines",
+      "OpenTelemetry",
+      "Memory-leak analysis",
+      "API mocking",
+      "React · Angular",
+    ],
     bullets: [
       "Worked as a full-stack developer using Java, Spring Boot, React and Angular.",
       "Developed integration frameworks connecting Dynatrace with Grafana through InfluxDB for enterprise observability.",
@@ -159,7 +197,13 @@ export const demos: Demo[] = [
     lat: 42,
     chips: ["GEO · MG Road ± 3 km", "DATE · tonight", "SORT · availability"],
     rows: [
-      { id: "me", title: "Abhinav Tyagi", meta: "built this autosuggest", isMe: true, score: 0.97 },
+      {
+        id: "me",
+        title: "Abhinav Tyagi",
+        meta: "built this autosuggest",
+        isMe: true,
+        score: 0.97,
+      },
       { id: "a", title: "Boutique stay · 1.2 km", meta: "geo boost", score: 0.93 },
       { id: "b", title: "Resort · 24 km", meta: "out of radius", score: 0.22 },
     ],
@@ -169,7 +213,13 @@ export const demos: Demo[] = [
     lat: 35,
     chips: ["SIZE · UK 9", "PRICE · ≤ ₹3,000", "CATEGORY · running"],
     rows: [
-      { id: "me", title: "Abhinav Tyagi", meta: "wrote the NER parser", isMe: true, score: 0.99 },
+      {
+        id: "me",
+        title: "Abhinav Tyagi",
+        meta: "wrote the NER parser",
+        isMe: true,
+        score: 0.99,
+      },
       { id: "a", title: "Trail runner · ₹2,799", meta: "ATC-rate boost", score: 0.94 },
       { id: "b", title: "Premium racer · ₹8,999", meta: "over price ceiling", score: 0.19 },
     ],
@@ -232,7 +282,11 @@ export const skillGroups: SkillGroup[] = [
   {
     label: "Search & data",
     items: [
-      { icon: "elasticsearch", name: "Elasticsearch", note: "Relevance, DSL, 6.x → 8.x migrations" },
+      {
+        icon: "elasticsearch",
+        name: "Elasticsearch",
+        note: "Relevance, DSL, 6.x → 8.x migrations",
+      },
       { icon: "kafka", name: "Kafka", note: "Ingestion pipelines" },
       { icon: "redis", name: "Redis", note: "Hot-path caching" },
       { icon: "mongodb", name: "MongoDB", note: "Aggregation pipelines" },
@@ -425,10 +479,16 @@ export const talks: TalkItem[] = [
  * loop without a visible seam.
  */
 export const instagramTiles = [
-  { src: "/assets/ig/01.jpg", alt: "Sitting in the Parvati river among boulders, pine forest behind" },
+  {
+    src: "/assets/ig/01.jpg",
+    alt: "Sitting in the Parvati river among boulders, pine forest behind",
+  },
   { src: "/assets/ig/02.jpg", alt: "Mirror selfie in a charcoal suit" },
   { src: "/assets/ig/03.jpg", alt: "Standing outside Hawa Mahal in Jaipur" },
-  { src: "/assets/ig/04.jpg", alt: "On a Royal Enfield Classic on a dirt track at golden hour" },
+  {
+    src: "/assets/ig/04.jpg",
+    alt: "On a Royal Enfield Classic on a dirt track at golden hour",
+  },
   { src: "/assets/ig/05.jpg", alt: "Sitting by a wooden sculpture in a garden at night" },
   { src: "/assets/ig/06.jpg", alt: "With a Royal Enfield Himalayan on a mountain ride stop" },
   { src: "/assets/ig/07.jpg", alt: "Facing down a very large dosa" },
