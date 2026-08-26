@@ -2813,11 +2813,17 @@ const ROW_H_SM = 92;
 const SIGNAL_H = 21;
 const CHAR_MS = 64;
 const SCENARIO_MS = 5600;
-/** Auto-typed while the visitor hasn't touched the input. */ const EXAMPLES = [
+/** Auto-typed while the visitor hasn't taken the panel over. */ const EXAMPLES = [
     "dairy free milk 1l",
     "gluten free bread",
     "cheap snacks under 100",
     "organic vegetables"
+];
+/** Offered once the panel is handed over — the safety net for anyone who
+    can't think of a query, and a quiet catalogue of what the parser knows. */ const SAMPLES = [
+    "cheap snacks under 100",
+    "sugar free biscuits",
+    "1l milk no dairy"
 ];
 function SearchConsole() {
     _s();
@@ -2826,7 +2832,12 @@ function SearchConsole() {
     const panelRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     const inputRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     const [query, setQuery] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(EXAMPLES[0]);
-    const [touched, setTouched] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
+    /* `touched` stops the demo loop for good; `announce` fills the live region
+     so the handover isn't a silent change for a screen reader. `queried`
+     flips on the first real keystroke, which is when the chrome pill goes
+     back to reporting hits and timing. */ const [touched, setTouched] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
+    const [queried, setQueried] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
+    const [announce, setAnnounce] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
     const [onScreen, setOnScreen] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(true);
     const [openRow, setOpenRow] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const [rowH, setRowH] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(ROW_H);
@@ -2866,8 +2877,8 @@ function SearchConsole() {
    * Runs synchronously on every keystroke. The catalogue is ~40 documents,
    * so a full parse + BM25 recall + rescore is well under a millisecond —
    * the reported timing is measured, not decorative.
-   */ const { parsed, hits, ms } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMemo"])({
-        "SearchConsole.useMemo": ()=>{
+   */ const computed = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMemo"])({
+        "SearchConsole.useMemo[computed]": ()=>{
             const t0 = performance.now();
             const p = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$search$2f$parse$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["detectBrand"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$search$2f$parse$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["parseQuery"])(query), __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$search$2f$rank$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["allBrands"]);
             const h = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$search$2f$rank$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["normalise"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$search$2f$rank$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["search"])(p, 5));
@@ -2877,9 +2888,24 @@ function SearchConsole() {
                 ms: performance.now() - t0
             };
         }
-    }["SearchConsole.useMemo"], [
+    }["SearchConsole.useMemo[computed]"], [
         query
     ]);
+    /* Handing the panel over empties the field, but wiping the rows underneath
+     would punish the click — and collapse the panel by ~95px while it's
+     mid-morph. So the last real result set is held until the first keystroke
+     re-queries. Once the visitor has actually typed, an empty field means an
+     empty field. */ const [held, setHeld] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
+        "SearchConsole.useEffect": ()=>{
+            if (query.trim()) setHeld(computed);
+        }
+    }["SearchConsole.useEffect"], [
+        computed,
+        query
+    ]);
+    const holding = !query.trim() && touched && !queried && held !== null;
+    const { parsed, hits, ms } = holding ? held : computed;
     /* ------------------------------------------------- idle demo typing -- */ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "SearchConsole.useEffect": ()=>{
             if (!ready || reduced || touched || !onScreen) return;
@@ -2929,6 +2955,33 @@ function SearchConsole() {
     const takeOver = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"])({
         "SearchConsole.useCallback[takeOver]": ()=>setTouched(true)
     }["SearchConsole.useCallback[takeOver]"], []);
+    /* The gold bar. Clears the field rather than leaving the demo's last query
+     in it, because an empty focused field is the clearest possible "type
+     here" — but the results stay put underneath: wiping them would punish
+     the click. */ const handOver = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"])({
+        "SearchConsole.useCallback[handOver]": ()=>{
+            setTouched(true);
+            setQuery("");
+            setOpenRow(null);
+            setAnnounce("Demo stopped. Search field ready — type a query or pick a sample.");
+            requestAnimationFrame({
+                "SearchConsole.useCallback[handOver]": ()=>{
+                    var _inputRef_current;
+                    return (_inputRef_current = inputRef.current) === null || _inputRef_current === void 0 ? void 0 : _inputRef_current.focus();
+                }
+            }["SearchConsole.useCallback[handOver]"]);
+        }
+    }["SearchConsole.useCallback[handOver]"], []);
+    const runSample = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"])({
+        "SearchConsole.useCallback[runSample]": (text)=>{
+            var _inputRef_current;
+            setTouched(true);
+            setQueried(true);
+            setQuery(text);
+            setOpenRow(null);
+            (_inputRef_current = inputRef.current) === null || _inputRef_current === void 0 ? void 0 : _inputRef_current.focus();
+        }
+    }["SearchConsole.useCallback[runSample]"], []);
     /* Stacking offsets: each row sits below the ones above it, and the open row
      is taller. Computing offsets rather than using normal flow keeps the
      re-rank a pure transform, so rows glide instead of jumping. */ const heights = hits.map((h)=>h.product.id === openRow ? rowH + h.signals.length * SIGNAL_H + 16 : rowH);
@@ -2953,7 +3006,7 @@ function SearchConsole() {
                                 "aria-hidden": "true"
                             }, void 0, false, {
                                 fileName: "[project]/components/SearchConsole.tsx",
-                                lineNumber: 126,
+                                lineNumber: 167,
                                 columnNumber: 11
                             }, this),
                             (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$sections$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["num"])("search"),
@@ -2961,7 +3014,7 @@ function SearchConsole() {
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/SearchConsole.tsx",
-                        lineNumber: 125,
+                        lineNumber: 166,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -2975,14 +3028,14 @@ function SearchConsole() {
                                 children: "why"
                             }, void 0, false, {
                                 fileName: "[project]/components/SearchConsole.tsx",
-                                lineNumber: 131,
+                                lineNumber: 172,
                                 columnNumber: 11
                             }, this),
                             " the third result outranked the first."
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/SearchConsole.tsx",
-                        lineNumber: 129,
+                        lineNumber: 170,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2991,37 +3044,45 @@ function SearchConsole() {
                         children: "Search sits where language meets systems, and that’s exactly where I like to live. Query understanding, ranking models, ingestion pipelines that never sleep — the result is platforms serving 25K+ requests a minute across a 10-million-product catalog that still feel personal."
                     }, void 0, false, {
                         fileName: "[project]/components/SearchConsole.tsx",
-                        lineNumber: 133,
+                        lineNumber: 174,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/SearchConsole.tsx",
-                lineNumber: 124,
+                lineNumber: 165,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "searchband__demo",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        className: "searchband__caption",
+                        className: "searchband__invite",
                         "data-reveal": "180",
+                        children: "Search something. Watch it think."
+                    }, void 0, false, {
+                        fileName: "[project]/components/SearchConsole.tsx",
+                        lineNumber: 185,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                        className: "searchband__caption",
+                        "data-reveal": "200",
                         children: [
-                            "Type anything. It parses your words into entities, recalls candidates with BM25, then",
-                            " ",
+                            "Type anything and it parses your words into entities, recalls candidates with BM25, then ",
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                 className: "accent",
                                 children: "re-ranks"
                             }, void 0, false, {
                                 fileName: "[project]/components/SearchConsole.tsx",
-                                lineNumber: 144,
-                                columnNumber: 11
+                                lineNumber: 190,
+                                columnNumber: 16
                             }, this),
-                            " them — and every row will tell you why it landed where it did."
+                            " them — every row tells you why it landed where it did."
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/SearchConsole.tsx",
-                        lineNumber: 142,
+                        lineNumber: 188,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3035,30 +3096,33 @@ function SearchConsole() {
                                         children: "parse → recall → rescore"
                                     }, void 0, false, {
                                         fileName: "[project]/components/SearchConsole.tsx",
-                                        lineNumber: 150,
+                                        lineNumber: 196,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                         className: "panel__status",
-                                        children: [
-                                            hits.length,
-                                            " hit",
-                                            hits.length === 1 ? "" : "s",
-                                            mounted ? " · ".concat(ms.toFixed(2), " ms") : ""
-                                        ]
-                                    }, void 0, true, {
+                                        children: touched && !queried ? "your turn" : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
+                                            children: [
+                                                "live · ",
+                                                hits.length,
+                                                " hit",
+                                                hits.length === 1 ? "" : "s",
+                                                mounted ? " · ".concat(ms.toFixed(2), " ms") : ""
+                                            ]
+                                        }, void 0, true)
+                                    }, void 0, false, {
                                         fileName: "[project]/components/SearchConsole.tsx",
-                                        lineNumber: 151,
+                                        lineNumber: 200,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/SearchConsole.tsx",
-                                lineNumber: 149,
+                                lineNumber: 195,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "panel__query",
+                                className: "panel__query".concat(touched ? " is-live" : ""),
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                         className: "panel__glyph",
@@ -3066,7 +3130,7 @@ function SearchConsole() {
                                         children: "⌕"
                                     }, void 0, false, {
                                         fileName: "[project]/components/SearchConsole.tsx",
-                                        lineNumber: 161,
+                                        lineNumber: 217,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -3075,18 +3139,19 @@ function SearchConsole() {
                                         value: query,
                                         onChange: (e)=>{
                                             takeOver();
+                                            setQueried(true);
                                             setQuery(e.target.value);
                                             setOpenRow(null);
                                         },
                                         onFocus: takeOver,
                                         onKeyDown: takeOver,
-                                        placeholder: "try: lactose free milk under 150",
+                                        placeholder: "try dairy free milk 1l…",
                                         "aria-label": "Search the demo catalogue",
                                         spellCheck: false,
                                         autoComplete: "off"
                                     }, void 0, false, {
                                         fileName: "[project]/components/SearchConsole.tsx",
-                                        lineNumber: 164,
+                                        lineNumber: 220,
                                         columnNumber: 13
                                     }, this),
                                     query && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -3101,13 +3166,13 @@ function SearchConsole() {
                                         children: "Clear"
                                     }, void 0, false, {
                                         fileName: "[project]/components/SearchConsole.tsx",
-                                        lineNumber: 181,
+                                        lineNumber: 238,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/SearchConsole.tsx",
-                                lineNumber: 160,
+                                lineNumber: 216,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3117,7 +3182,7 @@ function SearchConsole() {
                                     children: query.trim() ? "no entities recognised — falling back to plain text" : " "
                                 }, void 0, false, {
                                     fileName: "[project]/components/SearchConsole.tsx",
-                                    lineNumber: 197,
+                                    lineNumber: 254,
                                     columnNumber: 15
                                 }, this) : parsed.entities.map((e, i)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                         className: "chip",
@@ -3130,19 +3195,19 @@ function SearchConsole() {
                                                 children: e.type
                                             }, void 0, false, {
                                                 fileName: "[project]/components/SearchConsole.tsx",
-                                                lineNumber: 207,
+                                                lineNumber: 264,
                                                 columnNumber: 19
                                             }, this),
                                             e.label
                                         ]
                                     }, "".concat(e.type, "-").concat(e.label), true, {
                                         fileName: "[project]/components/SearchConsole.tsx",
-                                        lineNumber: 202,
+                                        lineNumber: 259,
                                         columnNumber: 17
                                     }, this))
                             }, void 0, false, {
                                 fileName: "[project]/components/SearchConsole.tsx",
-                                lineNumber: 195,
+                                lineNumber: 252,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3156,7 +3221,7 @@ function SearchConsole() {
                                         children: query.trim() ? "Nothing in the catalogue matches. It returns nothing rather than guessing." : "Start typing to search 40 products."
                                     }, void 0, false, {
                                         fileName: "[project]/components/SearchConsole.tsx",
-                                        lineNumber: 216,
+                                        lineNumber: 273,
                                         columnNumber: 15
                                     }, this),
                                     hits.map((h, rank)=>{
@@ -3183,7 +3248,7 @@ function SearchConsole() {
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/components/SearchConsole.tsx",
-                                                            lineNumber: 238,
+                                                            lineNumber: 295,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3199,13 +3264,13 @@ function SearchConsole() {
                                                                     loading: "lazy"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/components/SearchConsole.tsx",
-                                                                    lineNumber: 243,
+                                                                    lineNumber: 300,
                                                                     columnNumber: 25
                                                                 }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                     className: "result__thumb"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/components/SearchConsole.tsx",
-                                                                    lineNumber: 252,
+                                                                    lineNumber: 309,
                                                                     columnNumber: 25
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3226,13 +3291,13 @@ function SearchConsole() {
                                                                                     ]
                                                                                 }, void 0, true, {
                                                                                     fileName: "[project]/components/SearchConsole.tsx",
-                                                                                    lineNumber: 258,
+                                                                                    lineNumber: 315,
                                                                                     columnNumber: 29
                                                                                 }, this)
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/components/SearchConsole.tsx",
-                                                                            lineNumber: 255,
+                                                                            lineNumber: 312,
                                                                             columnNumber: 25
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3243,19 +3308,19 @@ function SearchConsole() {
                                                                             ].filter(Boolean).join(" · ")
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/components/SearchConsole.tsx",
-                                                                            lineNumber: 264,
+                                                                            lineNumber: 321,
                                                                             columnNumber: 25
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/components/SearchConsole.tsx",
-                                                                    lineNumber: 254,
+                                                                    lineNumber: 311,
                                                                     columnNumber: 23
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/components/SearchConsole.tsx",
-                                                            lineNumber: 240,
+                                                            lineNumber: 297,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3267,12 +3332,12 @@ function SearchConsole() {
                                                                 }
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/SearchConsole.tsx",
-                                                                lineNumber: 279,
+                                                                lineNumber: 336,
                                                                 columnNumber: 23
                                                             }, this)
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/SearchConsole.tsx",
-                                                            lineNumber: 278,
+                                                            lineNumber: 335,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3280,22 +3345,22 @@ function SearchConsole() {
                                                             children: h.norm.toFixed(2)
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/SearchConsole.tsx",
-                                                            lineNumber: 285,
+                                                            lineNumber: 342,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                             className: "result__caret",
                                                             "aria-hidden": "true",
-                                                            children: isOpen ? "−" : "+"
+                                                            children: isOpen ? "hide" : "why?"
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/SearchConsole.tsx",
-                                                            lineNumber: 289,
+                                                            lineNumber: 346,
                                                             columnNumber: 21
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/components/SearchConsole.tsx",
-                                                    lineNumber: 232,
+                                                    lineNumber: 289,
                                                     columnNumber: 19
                                                 }, this),
                                                 isOpen && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3308,7 +3373,7 @@ function SearchConsole() {
                                                                     children: s.label
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/components/SearchConsole.tsx",
-                                                                    lineNumber: 298,
+                                                                    lineNumber: 355,
                                                                     columnNumber: 27
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3320,12 +3385,12 @@ function SearchConsole() {
                                                                         }
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/components/SearchConsole.tsx",
-                                                                        lineNumber: 300,
+                                                                        lineNumber: 357,
                                                                         columnNumber: 29
                                                                     }, this)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/components/SearchConsole.tsx",
-                                                                    lineNumber: 299,
+                                                                    lineNumber: 356,
                                                                     columnNumber: 27
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3336,45 +3401,150 @@ function SearchConsole() {
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/components/SearchConsole.tsx",
-                                                                    lineNumber: 305,
+                                                                    lineNumber: 362,
                                                                     columnNumber: 27
                                                                 }, this)
                                                             ]
                                                         }, s.key + s.label, true, {
                                                             fileName: "[project]/components/SearchConsole.tsx",
-                                                            lineNumber: 297,
+                                                            lineNumber: 354,
                                                             columnNumber: 25
                                                         }, this))
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/SearchConsole.tsx",
-                                                    lineNumber: 295,
+                                                    lineNumber: 352,
                                                     columnNumber: 21
                                                 }, this)
                                             ]
                                         }, h.product.id, true, {
                                             fileName: "[project]/components/SearchConsole.tsx",
-                                            lineNumber: 227,
+                                            lineNumber: 284,
                                             columnNumber: 17
                                         }, this);
                                     })
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/SearchConsole.tsx",
-                                lineNumber: 214,
+                                lineNumber: 271,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "panel__note",
-                                children: "// real BM25 + rule-based NER, in your browser. CTR/ATC are synthetic priors, not telemetry."
-                            }, void 0, false, {
+                                className: "panelfoot".concat(touched ? " is-live" : ""),
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "panelfoot__slot",
+                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                            type: "button",
+                                            className: "invite",
+                                            onClick: handOver,
+                                            "aria-label": "Try the search demo yourself",
+                                            tabIndex: touched ? -1 : 0,
+                                            "aria-hidden": touched,
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                    className: "invite__line",
+                                                    children: "Your turn — search for something"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/components/SearchConsole.tsx",
+                                                    lineNumber: 389,
+                                                    columnNumber: 17
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                    className: "invite__tag",
+                                                    "aria-hidden": "true",
+                                                    children: [
+                                                        "Takes 3 seconds ",
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                            className: "invite__arrow",
+                                                            children: "→"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/components/SearchConsole.tsx",
+                                                            lineNumber: 391,
+                                                            columnNumber: 35
+                                                        }, this)
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/components/SearchConsole.tsx",
+                                                    lineNumber: 390,
+                                                    columnNumber: 17
+                                                }, this)
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/components/SearchConsole.tsx",
+                                            lineNumber: 381,
+                                            columnNumber: 15
+                                        }, this)
+                                    }, void 0, false, {
+                                        fileName: "[project]/components/SearchConsole.tsx",
+                                        lineNumber: 380,
+                                        columnNumber: 13
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "panelfoot__slot",
+                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "samplerow",
+                                            role: "group",
+                                            "aria-label": "Sample queries",
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                    className: "samplerow__label",
+                                                    "aria-hidden": "true",
+                                                    children: "Try one →"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/components/SearchConsole.tsx",
+                                                    lineNumber: 398,
+                                                    columnNumber: 17
+                                                }, this),
+                                                SAMPLES.map((s)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                        type: "button",
+                                                        className: "samplechip",
+                                                        tabIndex: touched ? 0 : -1,
+                                                        onClick: ()=>runSample(s),
+                                                        children: s
+                                                    }, s, false, {
+                                                        fileName: "[project]/components/SearchConsole.tsx",
+                                                        lineNumber: 402,
+                                                        columnNumber: 19
+                                                    }, this))
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/components/SearchConsole.tsx",
+                                            lineNumber: 397,
+                                            columnNumber: 15
+                                        }, this)
+                                    }, void 0, false, {
+                                        fileName: "[project]/components/SearchConsole.tsx",
+                                        lineNumber: 396,
+                                        columnNumber: 13
+                                    }, this)
+                                ]
+                            }, void 0, true, {
                                 fileName: "[project]/components/SearchConsole.tsx",
-                                lineNumber: 318,
+                                lineNumber: 379,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/SearchConsole.tsx",
-                        lineNumber: 148,
+                        lineNumber: 194,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                        className: "panel__note",
+                        children: "// real BM25 + rule-based NER, in your browser · CTR/ATC are synthetic priors, not telemetry"
+                    }, void 0, false, {
+                        fileName: "[project]/components/SearchConsole.tsx",
+                        lineNumber: 417,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                        className: "sr-only",
+                        role: "status",
+                        "aria-live": "polite",
+                        children: announce
+                    }, void 0, false, {
+                        fileName: "[project]/components/SearchConsole.tsx",
+                        lineNumber: 423,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3383,23 +3553,23 @@ function SearchConsole() {
                         children: "Lexical match gets you candidates. Synonyms, attribute fit and demand signals decide who actually deserves the top slot."
                     }, void 0, false, {
                         fileName: "[project]/components/SearchConsole.tsx",
-                        lineNumber: 325,
+                        lineNumber: 427,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/SearchConsole.tsx",
-                lineNumber: 141,
+                lineNumber: 182,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/components/SearchConsole.tsx",
-        lineNumber: 123,
+        lineNumber: 164,
         columnNumber: 5
     }, this);
 }
-_s(SearchConsole, "ZU4GPtWGcGdklWJDMc9BcfzmwXk=", false, function() {
+_s(SearchConsole, "4tm8KDxeah71mbt9kg2if2yFlPg=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$hooks$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useReducedMotion"],
         __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$hooks$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMounted"]

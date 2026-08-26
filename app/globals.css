@@ -276,7 +276,7 @@ button {
   background: radial-gradient(
     circle,
     rgba(120, 140, 175, 0.32),
-    rgba(120, 140, 175, 0.10) 45%,
+    rgba(120, 140, 175, 0.1) 45%,
     transparent 72%
   );
   filter: blur(80px);
@@ -963,12 +963,24 @@ button {
   gap: 20px;
 }
 
+.searchband__invite {
+  font-family: var(--font-serif);
+  font-size: clamp(23px, 2.4vw, 30px);
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--text);
+  margin: 0;
+}
+
 .searchband__caption {
   font-size: 15.5px;
   line-height: 1.65;
   color: var(--text-65);
-  margin: 0;
+  margin: -8px 0 0;
 }
+
+/* The invitation bar and the chips it becomes are styled further down, with
+   the panel they live inside. */
 
 .searchband__footnote {
   font-size: 13.5px;
@@ -1017,13 +1029,38 @@ button {
   animation: pulse 2.4s ease-in-out infinite;
 }
 
+/* A borderless line of text reads as output, not input — nobody guessed they
+   could type here. This gives it an actual field: inset ground, its own
+   border, a gold ring on focus. */
 .panel__query {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 13px 16px;
-  border-bottom: 1px solid var(--hairline);
+  margin: 12px 14px;
+  padding: 12px 14px;
   min-height: 52px;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(234, 228, 216, 0.16);
+  border-radius: 4px;
+  transition:
+    border-color 0.25s ease,
+    background 0.25s ease;
+}
+.panel__query:hover {
+  border-color: rgba(234, 228, 216, 0.26);
+}
+.panel__query:focus-within {
+  border-color: var(--accent-40);
+  background: rgba(0, 0, 0, 0.36);
+}
+/* Once the panel is handed over the field stays visibly the live element,
+   whether or not it currently holds focus. */
+.panel__query.is-live {
+  box-shadow: inset 0 0 0 1px rgba(200, 169, 110, 0.55);
+  transition:
+    border-color 0.25s ease,
+    background 0.25s ease,
+    box-shadow 0.3s ease;
 }
 
 .panel__input {
@@ -1043,10 +1080,6 @@ button {
 .panel__input:focus {
   outline: none;
 }
-/* The panel takes the focus ring so the caret isn't boxed in. */
-.panel:focus-within {
-  border-color: var(--accent-40);
-}
 
 .panel__clear {
   font-family: var(--font-mono);
@@ -1058,7 +1091,9 @@ button {
   border-radius: 99px;
   padding: 5px 10px;
   flex-shrink: 0;
-  transition: color 0.25s ease, border-color 0.25s ease;
+  transition:
+    color 0.25s ease,
+    border-color 0.25s ease;
 }
 .panel__clear:hover {
   color: var(--accent);
@@ -1106,6 +1141,7 @@ button {
   gap: 7px;
   padding: 13px 16px;
   min-height: 50px;
+  border-top: 1px solid var(--hairline);
   border-bottom: 1px solid var(--hairline);
 }
 
@@ -1151,7 +1187,7 @@ button {
   width: 100%;
   height: 74px;
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) 54px 40px 16px;
+  grid-template-columns: 28px minmax(0, 1fr) 54px 40px 34px;
   gap: 10px;
   align-items: center;
   padding: 0 16px;
@@ -1170,14 +1206,24 @@ button {
   opacity: 0.55;
 }
 
+/* "why?" rather than a "+": it is the actual question, and it matches the
+   promise the section heading makes. */
 .result__caret {
   font-family: var(--font-mono);
-  font-size: 13px;
-  color: var(--text-35);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--text-40);
   text-align: right;
+  border-bottom: 1px solid rgba(234, 228, 216, 0.2);
+  padding-bottom: 2px;
+  transition:
+    color 0.25s ease,
+    border-color 0.25s ease;
 }
+.result__head:hover .result__caret,
 .result.is-open .result__caret {
   color: var(--accent);
+  border-color: var(--accent-40);
 }
 
 .result__size {
@@ -1311,11 +1357,117 @@ button {
   color: var(--accent);
 }
 
+/* Out of the panel: the gold bar took the footer slot. */
 .panel__note {
-  padding: 11px 16px;
   font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--text-32);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  line-height: 1.6;
+  color: var(--text-40);
+  margin: -6px 0 0;
+}
+
+/* ------------------------------------------- panel footer: bar → chips
+ * Two rows of one grid. Handing the panel over swaps the track sizes, so the
+ * bar collapses and the chips grow into the space in the same beat — one
+ * object morphing, not two elements swapped.
+ */
+.panelfoot {
+  display: grid;
+  grid-template-rows: 1fr 0fr;
+  transition: grid-template-rows 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+}
+.panelfoot.is-live {
+  grid-template-rows: 0fr 1fr;
+}
+
+.panelfoot__slot {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.invite {
+  width: 100%;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 16px 18px;
+  background: var(--accent);
+  color: #0e0d0b;
+  transition: filter 0.25s ease;
+}
+.invite:hover,
+.invite:focus-visible {
+  filter: brightness(1.08);
+}
+/* Flush to the panel edge, so the ring has to sit inside it. */
+.invite:focus-visible {
+  outline: 1px solid var(--text);
+  outline-offset: -4px;
+}
+
+.invite__line {
+  font-family: var(--font-serif);
+  font-size: 23px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.invite__tag {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+.samplerow {
+  display: flex;
+  align-items: center;
+  /* One line at every width. The panel column is ~620px, so wrapping would
+     put the chips on two rows and make the bar-to-chips morph a 60px jump. */
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  gap: 9px;
+  /* 12px vertical, not 16 — it makes the chip row the same height as the bar
+     it replaces, so the morph doesn't move anything below the panel. */
+  padding: 12px 14px;
+  border-top: 1px solid var(--hairline);
+}
+.samplerow::-webkit-scrollbar {
+  display: none;
+}
+.samplechip,
+.samplerow__label {
+  flex-shrink: 0;
+}
+
+.samplerow__label {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.samplechip {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--accent);
+  border: 1px solid var(--accent-40);
+  border-radius: 99px;
+  padding: 8px 15px;
+  transition:
+    background 0.25s ease,
+    color 0.25s ease;
+}
+.samplechip:hover {
+  background: var(--accent);
+  color: #0e0d0b;
 }
 
 /* ====================================================== SHARED SECTION */
@@ -2560,9 +2712,26 @@ button {
   }
   .result__head {
     height: 92px;
-    grid-template-columns: 22px minmax(0, 1fr) 40px 36px 14px;
-    gap: 8px;
-    padding: 0 12px;
+    grid-template-columns: 18px minmax(0, 1fr) 32px 30px;
+    gap: 7px;
+    padding: 0 11px;
+  }
+  /* A 34px bar says nothing the number beside it doesn't. Reclaiming it gives
+     the title and the "demoted — not gluten-free" note room to finish, which
+     is the whole point of the demo. */
+  .result__bar {
+    display: none;
+  }
+  /* Bar stacks onto two lines; the chip row scrolls rather than wrapping into
+     three. */
+  .invite {
+    flex-direction: column;
+    gap: 6px;
+    padding: 16px;
+  }
+  .invite__line {
+    font-size: 20px;
+    text-align: center;
   }
   .breakdown {
     padding-left: 12px;
@@ -2597,6 +2766,31 @@ button {
   }
   .drawer__body {
     padding-top: 32px;
+  }
+}
+
+/* The narrowest phones: the tag line is the first thing to go — the serif
+   sentence is the affordance, the tag is only encouragement. */
+@media (max-width: 380px) {
+  /* 360px phones are 5px short of fitting "demoted — not dairy-free", which is
+     the line the whole demo exists to show. The thumbnail is the cheapest
+     thing to take it from. */
+  .result__thumb {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+@media (max-width: 599px) {
+  .invite {
+    padding: 15px 14px;
+    min-height: 52px;
+  }
+  .invite__line {
+    font-size: 18px;
+  }
+  .invite__tag {
+    display: none;
   }
 }
 
@@ -2697,6 +2891,13 @@ button {
   }
   /* `transform: none` resolves the rail to its full height — no draw-in. */
 
+  /* The bar/chip morph is swapped instantly — but the bar itself stays. It's
+     an affordance, not decoration. */
+  .panelfoot,
+  .invite,
+  .samplechip,
+  .panel__query,
+  .result__caret,
   .spine__role,
   .spine__node,
   .spine__chip,
