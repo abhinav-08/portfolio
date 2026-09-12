@@ -17,6 +17,10 @@ const eslintConfig = [
       ".next/**",
       "out/**",
       "build/**",
+      // Parking lot for files on their way out. They are still real modules
+      // whose imports may already be gone, so they must not be type-checked
+      // or linted — a dead file broke a production build once.
+      "_to_delete/**",
       "next-env.d.ts",
     ],
   },

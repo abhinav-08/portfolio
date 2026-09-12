@@ -1,1 +1,6 @@
 node_modules
+
+# Files staged for deletion. They must never reach a build: `tsc` walks every
+# .ts/.tsx in the project, so a module whose imports have already been removed
+# fails the build even though nothing renders it.
+_to_delete/
