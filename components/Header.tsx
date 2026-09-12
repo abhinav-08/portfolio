@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { config, nav } from "@/lib/site";
+import { nav } from "@/lib/site";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
@@ -34,14 +34,6 @@ export default function Header() {
         </nav>
 
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          {config.openToWork && (
-            <span className="pill-work">
-              {/* Real element, not ::before — HeroBreath drives it anti-phase
-                  to the glow, and JS can't write to a pseudo-element. */}
-              <span className="pill-work__dot" id="work-dot" aria-hidden="true" />
-              Open to work
-            </span>
-          )}
           <button
             type="button"
             className="nav-toggle"

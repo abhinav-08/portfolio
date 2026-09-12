@@ -32,6 +32,15 @@
   --accent-40: rgba(200, 169, 110, 0.4);
   --accent-14: rgba(200, 169, 110, 0.14);
 
+  --accent-hi: #e0c792;
+
+  /* Section surfaces, lightest to darkest. `--well` is the terminal/embed
+     ground — it sits *below* the page background on purpose, so an inset
+     reads as inset. */
+  --surface-alt: #121010;
+  --surface-tile: #171412;
+  --well: #0a0908;
+
   --hairline: rgba(234, 228, 216, 0.12);
   --hairline-10: rgba(234, 228, 216, 0.1);
   --hover-wash: rgba(234, 228, 216, 0.03);
@@ -50,8 +59,6 @@
   --rv-portrait: 260ms;
   --rv-rule: 720ms;
   --rv-meta-l: 880ms;
-  --rv-meta-r: 950ms;
-  --rv-bio: 1020ms;
   --rv-cta: 980ms;
   --rv-social: 1080ms;
 
@@ -442,31 +449,6 @@ button {
   color: var(--accent);
 }
 
-.pill-work {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  border: 1px solid var(--accent-40);
-  border-radius: 99px;
-  padding: 7px 16px;
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--accent);
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-/* Anti-phase to the glow, on the same clock — see HeroBreath. */
-.pill-work__dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent);
-  flex-shrink: 0;
-}
-
 @keyframes pulse {
   0%,
   100% {
@@ -518,39 +500,42 @@ button {
 
 /* =============================================================== HERO */
 
+/* Two equal columns, both centred on the same axis.
+ *
+ * It used to be 1.08fr / 0.92fr with the figure spanning two rows, which gave
+ * the copy a wider column *and* left it top-aligned against a much taller
+ * portrait — a 330px void under the last link. Equal tracks and one shared
+ * centre line is what makes the two halves read as a pair. */
 .hero {
   position: relative;
   min-height: 100vh;
   min-height: 100svh;
   display: grid;
-  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
-  /* Row 2 absorbs the slack. The figure spans both rows and is the taller
-     column; with `auto auto` its extra height inflated row 1 and opened a gap
-     between the name and the lede. */
-  grid-template-rows: auto 1fr;
-  column-gap: 64px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  column-gap: clamp(40px, 4.4vw, 72px);
   row-gap: 0;
   align-content: center;
   max-width: 1500px;
   margin: 0 auto;
-  padding: 132px var(--gutter) 72px;
+  padding: 116px var(--gutter) 64px;
+}
+
+.hero__copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
 /* Source order is head → body → figure so the copy stays together in the
    accessibility tree; desktop placement is explicit, mobile reorders. */
-.hero__head {
-  grid-column: 1;
-  grid-row: 1;
-}
-.hero__body {
-  grid-column: 1;
-  grid-row: 2;
-  align-self: start;
-}
+/* The cap lives here, not on the portrait, so the hairline rule below it
+   shares the same width and the figure reads as one block flush to the right
+   gutter — mirroring the copy flush to the left one. */
 .hero__figure {
-  grid-column: 2;
-  grid-row: 1 / span 2;
-  align-self: center;
+  min-width: 0;
+  width: min(100%, calc((100svh - 200px) * 0.8));
+  margin-left: auto;
 }
 
 .hero__eyebrow {
@@ -677,6 +662,11 @@ button {
 
 /* ---- portrait ---- */
 
+/* The 4:5 ratio means height is set by width, and at `width: 100%` the
+   portrait grew to 741px inside a 900px screen and pushed the hero 64px past
+   the fold. `.hero__figure` above caps the width to keep it on one screen; the
+   200px subtrahend is the frame around it — 116 top and 64 bottom padding plus
+   the rule and its margin. */
 .portrait {
   position: relative;
   width: 100%;
@@ -749,8 +739,7 @@ button {
   will-change: transform;
 }
 
-/* Drawn, not a border — a border can't animate from zero width, and this
-   doubles as the track for the minute sweep. */
+/* Drawn, not a border — a border can't animate from zero width. */
 .hero__rule {
   position: relative;
   height: 1px;
@@ -760,14 +749,6 @@ button {
   animation: draw 560ms var(--ease-draw) var(--rv-rule) both;
 }
 
-.hero__sweep {
-  position: absolute;
-  inset: 0;
-  background: rgba(200, 150, 63, 0.55);
-  transform: scaleX(0);
-  transform-origin: 0 50%;
-}
-
 @keyframes draw {
   from {
     transform: scaleX(0);
@@ -775,49 +756,6 @@ button {
   to {
     transform: scaleX(1);
   }
-}
-
-.portrait__meta {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  margin-top: 18px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  /* Spec says text-45, but at 11px over the (now brighter) background that
-     lands at ~3.6:1 — under AA. The handoff's own a11y note calls for
-     text-72+ on small copy, so this steps up to text-60 + text-72. */
-  color: var(--text-60);
-  margin-top: 12px;
-}
-
-.hero__meta-l {
-  animation: rise 520ms var(--ease-rise) var(--rv-meta-l) both;
-}
-
-.hero__meta-r {
-  animation: rise 520ms var(--ease-rise) var(--rv-meta-r) both;
-}
-
-.clock {
-  display: inline-block;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Fact sheet under the portrait (was the Essence section's right column).
-   A single wrapping line rather than four stacked rows — the label column is
-   what made it tall, and each value reads for itself in context. */
-.herofacts {
-  margin: 14px 0 0;
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-  line-height: 1.85;
-  color: var(--text-60);
-  animation: rise 560ms var(--ease-rise) var(--rv-bio) both;
-}
-
-.herofacts__sep {
-  color: var(--accent);
 }
 
 .scroll-cue {
@@ -2107,184 +2045,652 @@ button {
 
 /* ================================================================ LAB */
 
+/* Head + intro on one row, so a section opens across the full measure rather
+   than as a headline with a column of air beside it. */
+/* `min(Xpx, 100%)` on every auto-fit minimum below: a bare `minmax(340px,1fr)`
+   lays out one 340px track inside a 316px column at 360px wide and the card
+   is clipped, because the track floor doesn't know about its container. */
+.sechead {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
+  align-items: end;
+  gap: clamp(18px, 3vw, 56px);
+  margin-top: 20px;
+}
+
+.sechead__title {
+  margin: 0;
+}
+
+.sechead__intro {
+  font-size: 16px;
+  line-height: 1.75;
+  color: var(--text-55);
+  max-width: 46ch;
+  text-wrap: pretty;
+  margin: 0;
+}
+
+/* A small mono label above a group. */
+.minilabel {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--text-35);
+  margin: 0 0 14px;
+}
+
+/* ---------------------------------------------------- feature card -- */
+
+.feature {
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
+  margin-top: clamp(28px, 3.4vw, 52px);
+}
+
+.feature__main,
+.session {
+  display: flex;
+  flex-direction: column;
+  padding: clamp(26px, 2.6vw, 44px);
+}
+
+.feature__main {
+  gap: 26px;
+}
+
+.feature__badges {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.feature__kicker {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-32);
+}
+
+/* The pulsing dot is the only animation in this section — it is what marks
+   the one project that is still moving. */
+.status--live::before {
+  animation: pulse 2.4s ease-in-out infinite;
+}
+
+.status--muted {
+  border-color: var(--text-20);
+  color: var(--text-55);
+}
+.status--muted::before {
+  background: var(--text-40);
+}
+
+.feature__title {
+  font-family: var(--font-serif);
+  font-size: clamp(32px, 3.4vw, 46px);
+  font-weight: 500;
+  line-height: 1.08;
+  margin: 0;
+}
+
+.feature__blurb {
+  font-size: 15.5px;
+  line-height: 1.7;
+  color: var(--text-60);
+  max-width: 52ch;
+  text-wrap: pretty;
+  margin: 14px 0 0;
+}
+
+/* ------------------------------------------------- connector chain -- */
+
+/* Two-up, not auto-fit. The column is ~600px, where `minmax(168px, 1fr)`
+   resolves to three tracks and strands the fourth node alone on a second row.
+   Four nodes only ever look right as 4×1 or 2×2. */
+.chain {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+@media (min-width: 1600px) {
+  .chain {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* The arrow belongs to the node that follows it. As a standalone sibling it
+   strands at the end of a wrapped row, pointing at nothing. */
+.chain__link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.chain__arrow {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--accent-40);
+  flex-shrink: 0;
+}
+
+.chain__node {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--text-16);
+  background: var(--surface-tile);
+  padding: 13px 15px;
+}
+
+.chain__node.is-mcp {
+  border-color: var(--accent-40);
+  background: linear-gradient(180deg, rgba(200, 169, 110, 0.12), var(--surface-tile));
+}
+
+.chain__label {
+  display: block;
+  font-size: 14px;
+  color: var(--text-80);
+}
+.chain__node.is-mcp .chain__label {
+  color: var(--accent);
+}
+
+.chain__sub {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--text-35);
+  margin-top: 4px;
+}
+
+/* --------------------------------------------------- capability tiles */
+
+.captiles {
+  grid-template-columns: repeat(auto-fit, minmax(min(190px, 100%), 1fr));
+}
+
+.captile {
+  padding: 16px 18px;
+  background: var(--surface-tile);
+}
+
+.captile__title {
+  font-size: 14px;
+  color: var(--text-80);
+  margin: 0;
+}
+
+.captile__body {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-45);
+  text-wrap: pretty;
+  margin: 6px 0 0;
+}
+
+.stackchips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  /* Pins the stack to the bottom so both columns end on a line. */
+  margin-top: auto;
+}
+
+.stackchip {
+  border: 1px solid var(--text-16);
+  padding: 6px 12px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--text-45);
+}
+
+/* ------------------------------------------------------ session panel */
+
+.session {
+  gap: 18px;
+  background: var(--surface-alt);
+}
+
+.session__bar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--text-35);
+}
+
+.session__endpoint {
+  letter-spacing: 0.08em;
+  text-transform: none;
+  color: var(--text-26);
+}
+
+.session__well {
+  border: 1px solid var(--hairline);
+  background: var(--well);
+  padding: 20px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.75;
+}
+
+.session__turn.is-later {
+  border-top: 1px solid var(--hairline-10);
+  margin-top: 16px;
+  padding-top: 16px;
+}
+
+.session__prompt {
+  color: var(--text-80);
+  text-wrap: pretty;
+  margin: 0;
+}
+
+.session__caret {
+  color: var(--accent);
+  margin-right: 8px;
+}
+
+.session__out {
+  padding-left: 20px;
+  border-left: 1px solid var(--hairline);
+  margin-top: 10px;
+}
+
+.session__tool {
+  color: var(--accent);
+  opacity: 0.75;
+  margin: 0;
+}
+
+.session__field {
+  color: var(--text-35);
+  margin: 0;
+}
+
+/* "description" is itself 11 characters — at 11ch the longest field name ran
+   straight into its type with no gap. */
+.session__fieldname {
+  display: inline-block;
+  min-width: 13ch;
+}
+
+.session__ack {
+  color: #88a06a;
+  margin: 6px 0 0;
+}
+
+/* Prose, not mono. The agent answering in English rather than in a hit array
+   is the claim the whole panel is making. */
+.session__answer {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--text-60);
+  text-wrap: pretty;
+  margin: 0;
+}
+
+.toolgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(148px, 100%), 1fr));
+  gap: 8px;
+}
+
+.toolchip {
+  border: 1px solid var(--hairline);
+  padding: 10px 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-50);
+}
+
+.session__note {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1.6;
+  color: var(--text-26);
+  margin: auto 0 0;
+  padding-top: 18px;
+}
+
+/* --------------------------------------------------- secondary cards */
+
 .lab__grid {
-  grid-template-columns: repeat(3, 1fr);
-  margin-top: 48px;
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  margin-top: clamp(28px, 3.4vw, 52px);
 }
 
 .lab__cell {
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  padding: 32px 30px 36px;
+  gap: 16px;
+  padding: clamp(22px, 2.2vw, 32px);
 }
 
 .lab__title {
   font-family: var(--font-serif);
-  font-size: 27px;
+  font-size: clamp(24px, 2.2vw, 30px);
   font-weight: 500;
-  line-height: 1.2;
+  line-height: 1.15;
   margin: 0;
 }
 
 .lab__blurb {
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.7;
-  color: var(--text-55);
+  color: var(--text-50);
+  text-wrap: pretty;
   margin: 0;
 }
 
-/* ============================================================ WRITING */
+/* ============================================================ ARCHIVE */
 
-.writing__grid {
-  grid-template-columns: repeat(2, 1fr);
-  margin-top: 48px;
+.block {
+  margin-top: clamp(34px, 4vw, 64px);
 }
 
-.writing__cell {
+.blockhead {
   display: flex;
-  flex-direction: column;
-  padding: 32px 30px 34px;
-  transition: background 0.35s var(--ease);
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--hairline);
 }
 
-.writing__meta {
-  display: block;
+.blockhead__label {
   font-family: var(--font-mono);
   font-size: 11px;
-  letter-spacing: 0.06em;
-  color: var(--text-40);
-}
-
-.writing__title {
-  font-family: var(--font-serif);
-  font-size: clamp(21px, 2vw, 27px);
-  font-weight: 500;
-  line-height: 1.25;
-  margin: 16px 0 0;
-  transition: color 0.35s var(--ease);
-}
-
-.writing__excerpt {
-  font-size: 14.5px;
-  line-height: 1.7;
-  color: var(--text-55);
-  margin: 14px 0 0;
-}
-
-.writing__read {
-  display: block;
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.28em;
   text-transform: uppercase;
   color: var(--accent);
-  /* Pin to the bottom so the CTA aligns across cards of unequal height. */
-  margin-top: auto;
-  padding-top: 26px;
+  margin: 0;
 }
 
-@media (hover: hover) {
-  .writing__cell:hover {
-    background: #141210;
-  }
-  .writing__cell:hover .writing__title {
-    color: var(--accent);
-  }
+.blockhead__qualifier {
+  letter-spacing: 0.14em;
+  text-transform: lowercase;
+  color: var(--text-26);
+  margin-left: 12px;
 }
 
-/* ============================================================== TALKS */
-
-.talks__grid {
-  grid-template-columns: repeat(3, 1fr);
-  margin-top: 48px;
+.blockhead__action,
+.blockhead__count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-35);
+  white-space: nowrap;
 }
 
-.talk {
-  display: flex;
-  flex-direction: column;
+.blockhead__action {
+  color: var(--accent);
+  transition: opacity 0.3s ease;
+}
+.blockhead__action:hover {
+  opacity: 0.72;
+}
+
+/* ----------------------------------------------- A · editorial rows -- */
+
+/* The whole row is the link — a "read more" target inside a row this wide is
+   a smaller thing to hit than the row itself. */
+.note {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: clamp(16px, 2.4vw, 40px);
+  padding: clamp(20px, 2vw, 28px) clamp(6px, 1vw, 14px);
+  border-bottom: 1px solid var(--hairline-10);
   transition: background 0.35s var(--ease);
 }
 
-.talk__thumb {
-  position: relative;
-  display: block;
-  aspect-ratio: 16 / 9;
-  overflow: hidden;
-  border-bottom: 1px solid var(--hairline);
-  /* Hatch, matching the empty search-result thumbnails. */
-  background-image: repeating-linear-gradient(
-    135deg,
-    rgba(234, 228, 216, 0.05) 0 5px,
-    transparent 5px 10px
-  );
-}
-
-.talk__thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  filter: grayscale(24%) contrast(1.04);
-  transition: filter 0.4s var(--ease);
-}
-
-.talk__play {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 46px;
-  height: 46px;
-  border: 1px solid var(--text-25);
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  font-size: 13px;
-  color: var(--text-60);
-  padding-left: 2px;
-  transition:
-    border-color 0.35s var(--ease),
-    color 0.35s var(--ease);
-}
-
-.talk__body {
-  display: block;
-  padding: 24px 26px 28px;
-}
-
-.talk__meta {
-  display: block;
+.note__idx {
   font-family: var(--font-mono);
   font-size: 11px;
-  letter-spacing: 0.06em;
-  color: var(--text-40);
+  letter-spacing: 0.1em;
+  color: var(--accent-40);
 }
 
-.talk__title {
+.note__body {
+  min-width: 0;
+}
+
+.note__title {
   display: block;
   font-family: var(--font-serif);
-  font-size: 23px;
+  font-size: clamp(23px, 2.3vw, 31px);
   font-weight: 500;
-  line-height: 1.25;
-  margin-top: 12px;
-  transition: color 0.35s var(--ease);
+  line-height: 1.15;
+  color: var(--text);
+  text-wrap: pretty;
+  transition: color 0.3s ease;
 }
 
-@media (hover: hover) {
-  .talk:hover {
-    background: #141210;
-  }
-  .talk:hover .talk__title {
-    color: var(--accent);
-  }
-  .talk:hover .talk__play {
-    border-color: var(--accent-40);
-    color: var(--accent);
-  }
-  .talk:hover .talk__thumb img {
-    filter: grayscale(0%) contrast(1.04);
-  }
+.note__summary {
+  display: block;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text-45);
+  max-width: 64ch;
+  text-wrap: pretty;
+  margin-top: 10px;
+}
+
+.note__meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-35);
+  white-space: nowrap;
+}
+
+.note__arrow {
+  color: var(--accent);
+  margin-left: 10px;
+}
+
+/* ------------------------------------------------- B · paper sheets -- */
+
+.papers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr));
+  gap: clamp(18px, 2vw, 28px);
+  margin-top: clamp(18px, 2vw, 28px);
+}
+
+/* The gold top rule is the paper signal — it is what separates a sheet from
+   a blog row at a glance. */
+.paper {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: clamp(24px, 2.4vw, 36px);
+  background: linear-gradient(180deg, #15120f, #110f0e);
+  border: 1px solid var(--hairline);
+  border-top: 2px solid var(--accent-50);
+}
+
+.paper__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.paper__tag {
+  border: 1px solid var(--text-20);
+  padding: 5px 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  opacity: 0.8;
+}
+
+.paper__pages {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-35);
+}
+
+.paper__title {
+  font-family: var(--font-serif);
+  font-size: clamp(24px, 2.3vw, 32px);
+  font-weight: 500;
+  line-height: 1.15;
+  text-wrap: pretty;
+  margin: 0;
+}
+
+.paper__abstract {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--text-60);
+  text-wrap: pretty;
+  margin: 0;
+}
+
+.paper__foot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-top: auto;
+  padding-top: 18px;
+  border-top: 1px solid var(--hairline);
+}
+
+.paper__fields {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-26);
+}
+
+.readlink {
+  align-self: flex-start;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border-bottom: 1px solid var(--text-20);
+  padding-bottom: 3px;
+  white-space: nowrap;
+  transition:
+    color 0.3s ease,
+    border-color 0.3s ease;
+}
+.readlink:hover {
+  color: var(--accent-hi);
+  border-bottom-color: var(--accent);
+}
+
+/* ------------------------------------------------------ C · video --- */
+
+.video {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+  align-items: start;
+  gap: clamp(20px, 2.4vw, 36px);
+  margin-top: clamp(18px, 2vw, 28px);
+}
+
+/* A visible passe-partout, the same treatment as the session well. */
+.videoframe {
+  border: 1px solid var(--hairline);
+  background: var(--well);
+  padding: 10px;
+}
+
+.videoframe__inner {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  max-width: 100%;
+}
+
+.videoframe__inner iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+.videoframe__empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: repeating-linear-gradient(135deg, #141110 0 8px, #181412 8px 16px);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-35);
+}
+
+.videoframe__play {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: 1px solid var(--accent-40);
+  border-radius: 50%;
+  color: var(--accent);
+  font-size: 14px;
+}
+
+.video__side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding-top: 6px;
+}
+
+.video__title {
+  font-family: var(--font-serif);
+  font-size: clamp(24px, 2.3vw, 32px);
+  font-weight: 500;
+  line-height: 1.15;
+  text-wrap: pretty;
+  margin: 0;
+}
+
+.video__blurb {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text-50);
+  max-width: 52ch;
+  text-wrap: pretty;
+  margin: 14px 0 22px;
 }
 
 /* ========================================================== INSTAGRAM */
@@ -2456,9 +2862,6 @@ button {
   .skills__grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  .talks__grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
   .stats {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -2492,7 +2895,12 @@ button {
     row-gap: 40px;
     padding-top: 108px;
   }
-  /* Name first: the portrait used to lead here and pushed it off screen one. */
+  /* Name first: the portrait used to lead here and pushed it off screen one.
+     `display: contents` drops the copy wrapper out of the box tree so its two
+     children become grid items again and can be ordered around the figure. */
+  .hero__copy {
+    display: contents;
+  }
   .hero__head,
   .hero__body,
   .hero__figure {
@@ -2508,6 +2916,9 @@ button {
     width: 100%;
     align-self: start;
   }
+  .portrait {
+    width: 100%;
+  }
   .hero__body {
     order: 3;
   }
@@ -2518,11 +2929,13 @@ button {
   .searchband__intro {
     max-width: none;
   }
-  .lab__grid {
-    grid-template-columns: 1fr;
-  }
   .section__head {
     max-width: 20ch;
+  }
+  /* The feature card's two columns stop working once the session well has to
+     wrap its mono lines — below this it reads as one story, then its console. */
+  .feature {
+    grid-template-columns: 1fr;
   }
   .drawer__panel {
     width: 100%;
@@ -2587,11 +3000,6 @@ button {
   .wordmark {
     font-size: 20px;
   }
-  .pill-work {
-    font-size: 9.5px;
-    padding: 6px 12px;
-    letter-spacing: 0.08em;
-  }
   .hero__name {
     font-size: clamp(40px, 13vw, 64px);
   }
@@ -2604,10 +3012,6 @@ button {
   /* Row gap must exceed the 44px touch overlay so rows don't overlap. */
   .social-row {
     gap: 26px 26px;
-  }
-  .herofacts {
-    font-size: 11px;
-    line-height: 1.9;
   }
   .btn {
     padding: 13px 22px;
@@ -2673,13 +3077,44 @@ button {
     padding-bottom: 90px;
   }
   /* Skill cards stay two-up: the content is short and 12 stacked cells is
-     an unreasonable amount of scrolling. Writing and Talks go single. */
+     an unreasonable amount of scrolling. */
   .skills__grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  .writing__grid,
-  .talks__grid {
+  /* An index row needs three columns of room. Below this the number joins the
+     meta line and the title gets the full width. */
+  .note {
     grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .note__idx {
+    display: none;
+  }
+  .note__meta::before {
+    content: attr(data-idx) " · ";
+  }
+  .session__well {
+    padding: 16px 14px;
+    font-size: 11.5px;
+  }
+  /* Keep the name on the same line as its type — stacking them read as six
+     unrelated values rather than three field/type pairs. The column just
+     stops being a column. */
+  .session__fieldname {
+    min-width: 0;
+    margin-right: 12px;
+    color: var(--text-45);
+  }
+  /* One node per row. At two-up the box is ~115px wide and "MCP connector"
+     breaks across three lines. */
+  .chain {
+    grid-template-columns: 1fr;
+  }
+  .toolgrid {
+    grid-template-columns: repeat(auto-fit, minmax(min(110px, 100%), 1fr));
+  }
+  .video__side {
+    padding-top: 0;
   }
   .skills__group {
     margin-top: 40px;
@@ -2844,11 +3279,10 @@ button {
 
   .glow,
   .grain,
-  .pill-work__dot,
+  .status--live::before,
   .spine__now-dot,
   .marquee__track,
   .ig__track,
-  .pill-work::before,
   .panel__status::before,
   .scroll-cue,
   .panel__caret {
@@ -2862,18 +3296,12 @@ button {
   .bg-field,
   .bg-field__breath,
   .hero__rule,
-  .hero__meta-l,
-  .hero__meta-r,
-  .herofacts,
-  .clock,
   .header,
   .hero__eyebrow,
   .hero__lede,
   .cta-row,
   .social-row,
   .portrait,
-  .portrait__meta,
-  .herofacts,
   .panel,
   .chip,
   .drawer__panel,

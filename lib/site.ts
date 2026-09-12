@@ -9,7 +9,6 @@ export const identity = {
   name: "Abhinav Tyagi",
   role: "Backend & Search Engineer",
   location: "Gurugram, India",
-  coords: "28.4595° N, 77.0266° E",
   email: "abhinav.tyagi9816@gmail.com",
   phone: "+91 96343 54919",
   phoneHref: "+919634354919",
@@ -27,14 +26,6 @@ export const identity = {
 export const config = {
   backgroundMotion: true,
   filmGrain: true,
-  openToWork: true,
-  /**
-   * Cards flagged `placeholder: true` in lib/content.ts are hidden while this
-   * is false, and a section whose entries are ALL placeholders disappears
-   * entirely. Flip to true only to preview the layout with dummy content —
-   * never for a real deploy.
-   */
-  showPlaceholders: false,
 } as const;
 
 export const nav = [
@@ -42,7 +33,7 @@ export const nav = [
   { label: "Experience", href: "#experience" },
   { label: "Skills", href: "#skills" },
   { label: "Lab", href: "#lab" },
-  { label: "Writing", href: "#writing" },
+  { label: "Archive", href: "#archive" },
   { label: "Hello", href: "#hello" },
 ] as const;
 

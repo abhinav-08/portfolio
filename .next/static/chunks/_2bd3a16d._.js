@@ -658,7 +658,7 @@ const skillsIntro = "The tools I reach for daily — shaped by five years of sea
 const lab = [
     {
         status: "In progress",
-        title: "NaturalQuery",
+        title: "Natural query",
         blurb: "A natural-language-to-Elasticsearch query agent built on a custom MCP server (Java 17, Spring Boot 3.x, official MCP Java SDK)."
     },
     {

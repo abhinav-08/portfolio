@@ -1,27 +1,20 @@
-import { talks, writing } from "@/lib/content";
-import { config } from "@/lib/site";
+import { notes, papers } from "@/lib/content";
 
 /**
  * Section numbering is derived, not hardcoded.
  *
- * Sections whose entries are all placeholders don't render (see
- * `config.showPlaceholders`), and a hardcoded eyebrow would then leave a hole
- * in the sequence — "05 — Writing" followed by "07 — Elsewhere". Deriving the
- * numbers from what actually renders keeps them contiguous now, and correct
- * again the moment real Talks or Writing entries are added.
+ * A section with nothing in it doesn't render, and a hardcoded eyebrow would
+ * then leave a hole in the sequence — "05 — Archive" followed by
+ * "07 — Elsewhere". Deriving the numbers from what actually renders keeps them
+ * contiguous now and correct again the moment content is added or removed.
  */
-
-function renders(items: { placeholder?: boolean }[]): boolean {
-  return (config.showPlaceholders ? items : items.filter((i) => !i.placeholder)).length > 0;
-}
 
 const order: string[] = [
   "search",
   "experience",
   "skills",
   "lab",
-  ...(renders(writing) ? ["writing"] : []),
-  ...(renders(talks) ? ["talks"] : []),
+  ...(notes.length + papers.length > 0 ? ["archive"] : []),
   "instagram",
   "hello",
 ];

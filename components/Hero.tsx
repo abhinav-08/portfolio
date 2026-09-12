@@ -2,8 +2,6 @@
 
 import { useEffect, useRef } from "react";
 import { identity, socials } from "@/lib/site";
-import { facts } from "@/lib/content";
-import LiveClock from "@/components/LiveClock";
 import { useReducedMotion } from "@/lib/hooks";
 
 const FULL = "Abhinav Tyagi";
@@ -42,54 +40,57 @@ export default function Hero() {
 
   return (
     <section className="hero" id="top">
-      {/* Three blocks, not two columns. On mobile the portrait used to come
-          first and pushed the name off the first screen; splitting the copy
-          lets the name lead there while desktop keeps the same two-column
-          composition via explicit grid placement. */}
-      <div className="hero__head">
-        <p className="eyebrow hero__eyebrow">
-          <span className="rule-inline" aria-hidden="true" />
-          Backend &amp; Search Engineer · Gurugram, IN
-        </p>
+      {/* One copy column beside one figure column. The copy stays split into
+          two blocks because on mobile the portrait sits between them — name
+          first, then the portrait, then the lede and links. Above that
+          breakpoint `.hero__copy` is a real flex column; below it, it becomes
+          `display: contents` so the three blocks reorder as siblings. */}
+      <div className="hero__copy">
+        <div className="hero__head">
+          <p className="eyebrow hero__eyebrow">
+            <span className="rule-inline" aria-hidden="true" />
+            Backend &amp; Search Engineer · Gurugram, IN
+          </p>
 
-        <h1 className="hero__name">
-          {FULL}
-          <span className="accent">.</span>
-        </h1>
-      </div>
-
-      <div className="hero__body">
-        <p className="hero__lede">
-          I teach machines what people <em>mean</em> — not just what they type. Five years of
-          search platforms and ranking models that stay calm at 25K requests a minute.
-        </p>
-
-        <div className="cta-row">
-          <a ref={ctaRef} className="btn btn--primary" href={`mailto:${identity.email}`}>
-            Let&rsquo;s talk →
-          </a>
-          <a
-            className="btn btn--ghost"
-            href={identity.resume}
-            download={identity.resumeFilename}
-          >
-            Resume ↓
-          </a>
+          <h1 className="hero__name">
+            {FULL}
+            <span className="accent">.</span>
+          </h1>
         </div>
 
-        <div className="social-row">
-          {socials.map((s) => (
-            <a
-              key={s.label}
-              className={`social-link${s.accent ? " social-link--accent" : ""}`}
-              href={s.href}
-              {...(s.external
-                ? { target: "_blank", rel: "noopener noreferrer" }
-                : { download: "download" in s ? s.download : undefined })}
-            >
-              {s.label.toUpperCase()}
+        <div className="hero__body">
+          <p className="hero__lede">
+            I teach machines what people <em>mean</em> — not just what they type. Five years of
+            search platforms and ranking models that stay calm at 25K requests a minute.
+          </p>
+
+          <div className="cta-row">
+            <a ref={ctaRef} className="btn btn--primary" href={`mailto:${identity.email}`}>
+              Let&rsquo;s talk →
             </a>
-          ))}
+            <a
+              className="btn btn--ghost"
+              href={identity.resume}
+              download={identity.resumeFilename}
+            >
+              Resume ↓
+            </a>
+          </div>
+
+          <div className="social-row">
+            {socials.map((s) => (
+              <a
+                key={s.label}
+                className={`social-link${s.accent ? " social-link--accent" : ""}`}
+                href={s.href}
+                {...(s.external
+                  ? { target: "_blank", rel: "noopener noreferrer" }
+                  : { download: "download" in s ? s.download : undefined })}
+              >
+                {s.label.toUpperCase()}
+              </a>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -115,36 +116,8 @@ export default function Hero() {
         </div>
 
         {/* A drawn 1px element, not a border-top — borders can't be animated
-            from zero width, and this one doubles as the minute sweep's track. */}
-        <div className="hero__rule" aria-hidden="true">
-          <span className="hero__sweep" id="hero-sweep" />
-        </div>
-
-        <div className="portrait__meta">
-          <span className="hero__meta-l">
-            Local time — <LiveClock />
-          </span>
-          <span className="hero__meta-r">{identity.coords}</span>
-        </div>
-
-        {/* One line, values only. The BASED / TRADE / STACK / BELIEF labels are
-            what forced four stacked rows; in context each value announces what
-            it is, so the labels earn their space only as screen-reader text. */}
-        <p className="herofacts">
-          {facts.map((f, i) => (
-            <span key={f.label}>
-              {/* ✦, not ·, because several values contain their own "·"
-                  separators — a gold dot between them was unreadable. */}
-              {i > 0 && (
-                <span className="herofacts__sep" aria-hidden="true">
-                  {" ✦ "}
-                </span>
-              )}
-              <span className="sr-only">{f.label}: </span>
-              {f.value}
-            </span>
-          ))}
-        </p>
+            from zero width. */}
+        <div className="hero__rule" aria-hidden="true" />
       </div>
 
       <div className="scroll-cue" aria-hidden="true" />

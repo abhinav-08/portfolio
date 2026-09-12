@@ -8,7 +8,7 @@ import Experience from "@/components/Experience";
 import Reveal from "@/components/Reveal";
 import ScrollFx from "@/components/ScrollFx";
 import HeroBreath from "@/components/HeroBreath";
-import { Footer, Instagram, Lab, Skills, Talks, Writing } from "@/components/Sections";
+import { Archive, Footer, Instagram, Lab, Skills } from "@/components/Sections";
 
 export default function Page() {
   return (
@@ -29,8 +29,7 @@ export default function Page() {
         <Experience />
         <Skills />
         <Lab />
-        <Writing />
-        <Talks />
+        <Archive />
         <Instagram />
         <Footer />
       </main>

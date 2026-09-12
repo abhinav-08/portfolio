@@ -226,16 +226,6 @@ export const demos: Demo[] = [
   },
 ];
 
-/* ------------------------------------------------------- hero facts */
-
-/** Rendered as the label/value sheet under the hero portrait. */
-export const facts = [
-  { label: "Based", value: "Gurugram, India" },
-  { label: "Trade", value: "Search platforms · distributed systems" },
-  { label: "Stack", value: "Java · Spring · Elasticsearch · Kafka" },
-  { label: "Belief", value: "Relevance is empathy at scale" },
-];
-
 /* ------------------------------------------------------------ stats */
 
 export interface Stat {
@@ -334,13 +324,98 @@ export interface LabItem {
   blurb: string;
 }
 
+/** One step in the "how it connects" chain. */
+export interface ChainNode {
+  label: string;
+  sub: string;
+  /** The MCP connector — the one link the whole section is about. */
+  highlight?: boolean;
+}
+
+/** A line of the illustrative MCP session. */
+export type SessionTurn =
+  | { kind: "tool"; prompt: string; tool: string; fields: Array<[string, string]>; ack: string }
+  | { kind: "prose"; prompt: string; answer: string };
+
+export interface LabFeature {
+  status: LabStatus;
+  kicker: string;
+  title: string;
+  blurb: string;
+  chain: ChainNode[];
+  capabilities: Array<{ title: string; body: string }>;
+  /** Comma-separated on purpose — split at render, so it stays one value. */
+  stack: string;
+  endpoint: string;
+  session: SessionTurn[];
+  tools: string[];
+  sessionNote: string;
+}
+
+/**
+ * The lab's headline. The session below is *illustrative* — a written example
+ * of the shape of an exchange, not a recorded transcript and not a live
+ * terminal. `sessionNote` says so on the page, and it should keep saying so.
+ */
+export const labFeature: LabFeature = {
+  status: "In progress",
+  kicker: "Flagship",
+  title: "Natural query",
+  blurb:
+    "An Elasticsearch agent that speaks plain English. Ask it a question and it plans the query, runs it against my live cluster and answers. Describe a schema and it writes the mapping and creates the index — no console, no JSON by hand.",
+  chain: [
+    { label: "Plain English", sub: "prompt" },
+    { label: "Agent", sub: "plan · tools" },
+    { label: "MCP connector", sub: "elastic · custom", highlight: true },
+    { label: "Elastic cluster", sub: "live index" },
+  ],
+  capabilities: [
+    {
+      title: "Writes mappings",
+      body: "Creates indices and field types straight on the cluster.",
+    },
+    { title: "Answers in English", body: "Reads back results instead of raw hit arrays." },
+    { title: "Tool-scoped", body: "Every cluster action is an explicit MCP tool call." },
+  ],
+  stack: "Java 17, Spring Boot 3.x, MCP Java SDK, Elasticsearch 8.x",
+  endpoint: "mcp://elastic · connected",
+  session: [
+    {
+      kind: "tool",
+      prompt:
+        "make me an index for the product catalog, descriptions should be semantically searchable",
+      tool: "create_index · product-catalog",
+      fields: [
+        ["title", "text + keyword"],
+        ["price", "scaled_float"],
+        ["description", "dense_vector[768] cosine"],
+      ],
+      ack: "acknowledged: true",
+    },
+    {
+      kind: "prose",
+      prompt: "which categories lost the most impressions last week?",
+      answer:
+        "Footwear is down 18%, mostly on \u201crunning shoes\u201d. Two of its top sellers dropped out of the first page after the last reindex.",
+    },
+  ],
+  tools: [
+    "search_index",
+    "create_index",
+    "put_mapping",
+    "list_indices",
+    "explain_query",
+    "cluster_health",
+  ],
+  sessionNote:
+    "Illustrative exchange — the connector exposes search, mapping and index tools to the agent.",
+};
+
+export const labIntro =
+  "Right now that means one thing: giving Elasticsearch a conversation layer. An agent that holds a real connection to my cluster, understands what I\u2019m asking in English, and does the indexing work itself.";
+
+/** Everything that isn't the flagship. */
 export const lab: LabItem[] = [
-  {
-    status: "In progress",
-    title: "NaturalQuery",
-    blurb:
-      "A natural-language-to-Elasticsearch query agent built on a custom MCP server (Java 17, Spring Boot 3.x, official MCP Java SDK).",
-  },
   {
     status: "Active",
     title: "LTR Rescoring",
@@ -356,115 +431,83 @@ export const lab: LabItem[] = [
 export const labClosing =
   "Some become production features. Some stay internal tools. Some just teach me something.";
 
-/* ---------------------------------------------------------- writing */
+/* ---------------------------------------------------------- archive */
 
-export interface WritingItem {
-  /** Shown in the meta line before read time and year. */
-  source: string;
-  readTime: string;
-  year: string;
+export interface ArchiveNote {
   title: string;
-  excerpt: string;
+  summary: string;
+  readMinutes: number;
+  year: string;
   href: string;
-  /** true = not real content yet; the section warns in dev and can be filtered. */
-  placeholder?: boolean;
 }
 
-/**
- * All four entries are real and live. Titles, read times and dates were taken
- * from the published posts; excerpts come from each post's own subtitle or
- * opening line, lightly condensed to fit a card.
- *
- * To add another post, copy an entry. Anything flagged `placeholder: true` is
- * hidden from the built site (see lib/site.ts → `showPlaceholders`), so a
- * half-written card can never ship.
- */
-export const writing: WritingItem[] = [
+export interface Paper {
+  title: string;
+  abstract: string;
+  year: string;
+  pages: number;
+  fields: string;
+  href: string;
+}
+
+export interface ArchiveVideo {
+  /** Bare id or a full YouTube URL — both are accepted. */
+  id: string;
+  title: string;
+  blurb: string;
+}
+
+export const archiveIntro =
+  "Two kinds of writing: engineering notes I published as I worked things out, and papers written with a proper method section.";
+
+export const notes: ArchiveNote[] = [
   {
-    source: "Medium",
-    readTime: "6 min",
-    year: "2021",
     title: "End-to-end integration of Dynatrace and Grafana using Java",
-    excerpt:
-      "How to integrate Dynatrace, the APM tool, with Grafana — a metric analytics and visualisation suite.",
+    summary:
+      "Wiring the APM tool into a metrics and visualisation stack — where the data actually has to be reshaped.",
+    readMinutes: 6,
+    year: "2021",
     href: "https://abhinavtyagi08.medium.com/end-to-end-integration-of-dynatrace-and-grafana-using-java-694ba326fdae",
   },
   {
-    source: "Medium",
-    readTime: "4 min",
+    title: "Using the Dynatrace API with Postman",
+    summary:
+      "Token creation, headers, and pulling host metrics — the short version I wanted when I started.",
+    readMinutes: 4,
     year: "2021",
-    title: "Using Dynatrace API with Postman",
-    excerpt:
-      "Learning the Dynatrace API from Postman — token creation, headers, and pulling host metrics.",
     href: "https://abhinavtyagi08.medium.com/using-dynatrace-api-with-with-postman-7985902482cb",
   },
+];
+
+export const papers: Paper[] = [
   {
-    source: "Research",
-    readTime: "12 min",
-    year: "2021",
     title: "Knowledge Extraction in Digit Recognition Using the MNIST Dataset",
-    excerpt:
-      "Exploring how interpretable knowledge can be extracted from models trained on handwritten-digit recognition.",
+    abstract:
+      "How interpretable knowledge can be pulled back out of models trained on handwritten-digit recognition.",
+    year: "2021",
+    pages: 12,
+    fields: "Machine learning · Interpretability",
     href: "https://www.igi-global.com/gateway/article/288321",
   },
   {
-    source: "Research",
-    readTime: "10 min",
-    year: "2020",
     title: "Algorithmic Analysis of an Automatic Attendance System using Facial Recognition",
-    excerpt:
+    abstract:
       "A comparative analysis of detection and recognition pipelines for attendance automation.",
+    year: "2020",
+    pages: 10,
+    fields: "Computer vision · Benchmarking",
     href: "https://www.igi-global.com/article/algorithmic-analysis-of-automatic-attendance-system-using-facial-recognition/286688",
   },
 ];
 
-export const writingFootnote = "Published research + engineering notes";
+export const archiveVideo: ArchiveVideo = {
+  id: "kSeDBrgKAVk",
+  title: "Memory dump analysis in Dynatrace APM",
+  blurb:
+    "Walking through captured heap dumps in Dynatrace — reading allocation hotspots and tracing them back to the code that caused them.",
+};
 
-/* ------------------------------------------------------------ talks */
-
-export interface TalkItem {
-  kind: string;
-  duration: string;
-  year: string;
-  title: string;
-  href: string;
-  /** Path under /public, e.g. "/assets/talks/01.jpg". Omit for the hatch placeholder. */
-  thumb?: string;
-  placeholder?: boolean;
-}
-
-/**
- * ALL PLACEHOLDERS. Fill these in with real YouTube links and 16:9 thumbnails
- * (drop images in /public/assets/talks/ and set `thumb`), then remove the
- * `placeholder` flag. While every entry is flagged, the whole Talks section is
- * hidden from the built site — see lib/site.ts → `showPlaceholders`.
- */
-export const talks: TalkItem[] = [
-  {
-    kind: "Talk",
-    duration: "18 min",
-    year: "2026",
-    title: "Your video title here",
-    href: "https://www.youtube.com/@abhinavtyagi122",
-    placeholder: true,
-  },
-  {
-    kind: "Deep dive",
-    duration: "25 min",
-    year: "2025",
-    title: "Another video title here",
-    href: "https://www.youtube.com/@abhinavtyagi122",
-    placeholder: true,
-  },
-  {
-    kind: "Tutorial",
-    duration: "12 min",
-    year: "2025",
-    title: "A third video title here",
-    href: "https://www.youtube.com/@abhinavtyagi122",
-    placeholder: true,
-  },
-];
+export const archiveClosing = "Written to be read later, mostly by me.";
 
 /* -------------------------------------------------------- instagram */
 
