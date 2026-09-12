@@ -1931,6 +1931,8 @@ function normalise(hits) {
     ()=>archiveIntro,
     "archiveVideo",
     ()=>archiveVideo,
+    "coreSkills",
+    ()=>coreSkills,
     "demos",
     ()=>demos,
     "instagramTiles",
@@ -1951,12 +1953,14 @@ function normalise(hits) {
     ()=>papers,
     "roles",
     ()=>roles,
-    "skillGroups",
-    ()=>skillGroups,
+    "skillsClosing",
+    ()=>skillsClosing,
     "skillsIntro",
     ()=>skillsIntro,
     "stats",
-    ()=>stats
+    ()=>stats,
+    "toolGroups",
+    ()=>toolGroups
 ]);
 const roles = [
     {
@@ -2226,54 +2230,76 @@ const marqueeTerms = [
     "kafka pipelines",
     "25k rpm, unbothered"
 ];
-const skillGroups = [
+const coreSkills = [
+    {
+        kicker: "Relevance",
+        name: "Elasticsearch",
+        note: "Relevance tuning, the DSL by hand, and two 6.x → 8.x migrations that stayed online.",
+        depth: 4,
+        depthOf: 4,
+        metric: "10M",
+        metricNote: [
+            "Docs indexed",
+            "Near-realtime"
+        ]
+    },
+    {
+        kicker: "Throughput",
+        name: "Java · Spring",
+        note: "Search services that hold their nerve under load, with the hot path kept in Redis.",
+        depth: 4,
+        depthOf: 4,
+        metric: "25K",
+        metricNote: [
+            "Requests / min",
+            "−45% latency"
+        ]
+    },
+    {
+        kicker: "Ranking",
+        name: "LTR · XGBoost",
+        note: "Rescore pipelines, feature logging, and the judgement work that decides what better means.",
+        depth: 3,
+        depthOf: 4,
+        metric: "3 yrs",
+        metricNote: [
+            "In production",
+            "Rescoring live"
+        ]
+    }
+];
+const toolGroups = [
     {
         label: "Search & data",
         items: [
             {
-                icon: "elasticsearch",
-                name: "Elasticsearch",
-                note: "Relevance, DSL, 6.x → 8.x migrations"
-            },
-            {
-                icon: "kafka",
                 name: "Kafka",
-                note: "Ingestion pipelines"
+                descriptor: "ingestion pipelines"
             },
             {
-                icon: "redis",
                 name: "Redis",
-                note: "Hot-path caching"
+                descriptor: "hot-path caching"
             },
             {
-                icon: "mongodb",
                 name: "MongoDB",
-                note: "Aggregation pipelines"
+                descriptor: "aggregation pipelines"
             }
         ]
     },
     {
-        label: "Language & retrieval",
+        label: "Language",
         items: [
             {
-                icon: "nlp",
-                name: "NLP",
-                note: "Parsing what people meant"
-            },
-            {
-                icon: "vector",
-                name: "Vector search",
-                note: "Dense retrieval, ANN indexes"
-            },
-            {
-                icon: "embeddings",
-                name: "Embeddings",
-                note: "Two-tower & semantic tagging"
-            },
-            {
-                icon: "ner",
                 name: "NER",
-                note: "Sizes, units and brands from raw queries"
+                descriptor: "sizes, units, brands"
+            },
+            {
+                name: "Vector search",
+                descriptor: "dense retrieval, ANN"
+            },
+            {
+                name: "Embeddings",
+                descriptor: "two-tower, tagging"
             }
         ]
     },
@@ -2281,54 +2307,43 @@ const skillGroups = [
         label: "Backend",
         items: [
             {
-                icon: "java",
-                name: "Java",
-                note: "Primary language"
-            },
-            {
-                icon: "spring",
-                name: "Spring Boot",
-                note: "High-throughput microservices"
-            },
-            {
-                icon: "python",
                 name: "Python",
-                note: "Tooling & ML pipelines"
+                descriptor: "tooling & ML pipelines"
             },
             {
-                icon: "ltr",
-                name: "XGBoost · LTR",
-                note: "Learning-to-rank rescoring"
+                name: "Microservices",
+                descriptor: "event-driven"
+            },
+            {
+                name: "LLM tooling",
+                descriptor: "MCP, agents"
             }
         ]
     },
     {
-        label: "Infra & tooling",
+        label: "Infra",
         items: [
             {
-                icon: "kubernetes",
                 name: "Kubernetes",
-                note: "Orchestration & rollouts"
+                descriptor: "orchestration, rollouts"
             },
             {
-                icon: "docker",
                 name: "Docker",
-                note: "Containers & CI environments"
+                descriptor: "containers & CI"
             },
             {
-                icon: "cloud",
                 name: "AWS · GCP · Azure",
-                note: "Multi-cloud deploys"
+                descriptor: "multi-cloud deploys"
             },
             {
-                icon: "otel",
                 name: "OpenTelemetry",
-                note: "Tracing & instrumentation"
+                descriptor: "tracing"
             }
         ]
     }
 ];
-const skillsIntro = "The tools I reach for daily — shaped by five years of search, ranking, and backend systems work.";
+const skillsIntro = "Depth beats breadth in search work — most of my day happens inside the first three. Everything below them is a tool I have shipped, not a tool I have read about.";
+const skillsClosing = "Anything on this page, I can walk you through in the code.";
 const labFeature = {
     status: "In progress",
     kicker: "Flagship",

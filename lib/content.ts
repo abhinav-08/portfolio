@@ -255,64 +255,100 @@ export const marqueeTerms = [
 
 /* ----------------------------------------------------------- skills */
 
-export interface Skill {
-  /** Key into lib/icon-paths.ts, or a hand-drawn glyph in components/Icon.tsx */
-  icon: string;
+export interface CoreSkill {
+  /** Mono kicker — what this skill is *for*, not what it is. */
+  kicker: string;
   name: string;
   /** One line on what it is actually used for — not a proficiency claim. */
   note: string;
+  /** Filled marks out of `depthOf`. Decorative; the value is also read out. */
+  depth: number;
+  depthOf: number;
+  metric: string;
+  /** Two lines, rendered stacked. */
+  metricNote: [string, string];
 }
 
-export interface SkillGroup {
+export interface ToolGroup {
   label: string;
-  items: Skill[];
+  items: Array<{ name: string; descriptor: string }>;
 }
 
-export const skillGroups: SkillGroup[] = [
+/**
+ * The three the work actually rests on. Everything here carries a number,
+ * because the point of promoting them is that there is something to show —
+ * a skill with no proof belongs in the toolbox below.
+ */
+export const coreSkills: CoreSkill[] = [
+  {
+    kicker: "Relevance",
+    name: "Elasticsearch",
+    note: "Relevance tuning, the DSL by hand, and two 6.x → 8.x migrations that stayed online.",
+    depth: 4,
+    depthOf: 4,
+    metric: "10M",
+    metricNote: ["Docs indexed", "Near-realtime"],
+  },
+  {
+    kicker: "Throughput",
+    name: "Java · Spring",
+    note: "Search services that hold their nerve under load, with the hot path kept in Redis.",
+    depth: 4,
+    depthOf: 4,
+    metric: "25K",
+    metricNote: ["Requests / min", "−45% latency"],
+  },
+  {
+    kicker: "Ranking",
+    name: "LTR · XGBoost",
+    note: "Rescore pipelines, feature logging, and the judgement work that decides what better means.",
+    depth: 3,
+    depthOf: 4,
+    metric: "3 yrs",
+    metricNote: ["In production", "Rescoring live"],
+  },
+];
+
+export const toolGroups: ToolGroup[] = [
   {
     label: "Search & data",
     items: [
-      {
-        icon: "elasticsearch",
-        name: "Elasticsearch",
-        note: "Relevance, DSL, 6.x → 8.x migrations",
-      },
-      { icon: "kafka", name: "Kafka", note: "Ingestion pipelines" },
-      { icon: "redis", name: "Redis", note: "Hot-path caching" },
-      { icon: "mongodb", name: "MongoDB", note: "Aggregation pipelines" },
+      { name: "Kafka", descriptor: "ingestion pipelines" },
+      { name: "Redis", descriptor: "hot-path caching" },
+      { name: "MongoDB", descriptor: "aggregation pipelines" },
     ],
   },
   {
-    label: "Language & retrieval",
+    label: "Language",
     items: [
-      { icon: "nlp", name: "NLP", note: "Parsing what people meant" },
-      { icon: "vector", name: "Vector search", note: "Dense retrieval, ANN indexes" },
-      { icon: "embeddings", name: "Embeddings", note: "Two-tower & semantic tagging" },
-      { icon: "ner", name: "NER", note: "Sizes, units and brands from raw queries" },
+      { name: "NER", descriptor: "sizes, units, brands" },
+      { name: "Vector search", descriptor: "dense retrieval, ANN" },
+      { name: "Embeddings", descriptor: "two-tower, tagging" },
     ],
   },
   {
     label: "Backend",
     items: [
-      { icon: "java", name: "Java", note: "Primary language" },
-      { icon: "spring", name: "Spring Boot", note: "High-throughput microservices" },
-      { icon: "python", name: "Python", note: "Tooling & ML pipelines" },
-      { icon: "ltr", name: "XGBoost · LTR", note: "Learning-to-rank rescoring" },
+      { name: "Python", descriptor: "tooling & ML pipelines" },
+      { name: "Microservices", descriptor: "event-driven" },
+      { name: "LLM tooling", descriptor: "MCP, agents" },
     ],
   },
   {
-    label: "Infra & tooling",
+    label: "Infra",
     items: [
-      { icon: "kubernetes", name: "Kubernetes", note: "Orchestration & rollouts" },
-      { icon: "docker", name: "Docker", note: "Containers & CI environments" },
-      { icon: "cloud", name: "AWS · GCP · Azure", note: "Multi-cloud deploys" },
-      { icon: "otel", name: "OpenTelemetry", note: "Tracing & instrumentation" },
+      { name: "Kubernetes", descriptor: "orchestration, rollouts" },
+      { name: "Docker", descriptor: "containers & CI" },
+      { name: "AWS · GCP · Azure", descriptor: "multi-cloud deploys" },
+      { name: "OpenTelemetry", descriptor: "tracing" },
     ],
   },
 ];
 
 export const skillsIntro =
-  "The tools I reach for daily — shaped by five years of search, ranking, and backend systems work.";
+  "Depth beats breadth in search work — most of my day happens inside the first three. Everything below them is a tool I have shipped, not a tool I have read about.";
+
+export const skillsClosing = "Anything on this page, I can walk you through in the code.";
 
 /* -------------------------------------------------------------- lab */
 

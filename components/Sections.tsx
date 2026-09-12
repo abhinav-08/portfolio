@@ -2,6 +2,7 @@ import {
   archiveClosing,
   archiveIntro,
   archiveVideo,
+  coreSkills,
   instagramTiles,
   lab,
   labClosing,
@@ -9,11 +10,11 @@ import {
   labIntro,
   notes,
   papers,
-  skillGroups,
+  skillsClosing,
   skillsIntro,
+  toolGroups,
 } from "@/lib/content";
 import { identity, socials } from "@/lib/site";
-import Icon from "@/components/Icon";
 import { num } from "@/lib/sections";
 
 /** Outbound link props, in one place. */
@@ -30,36 +31,110 @@ function youtubeId(raw: string): string {
   return v.match(/(?:v=|youtu\.be\/|embed\/)([\w-]{6,})/)?.[1] || v;
 }
 
+/** Shared opener for a labelled block: gold label left, meta or link right. */
+function BlockHead({
+  label,
+  qualifier,
+  action,
+  href,
+}: {
+  label: string;
+  /** Lowercase note beside the label. Omit where there is nothing to add. */
+  qualifier?: string;
+  action: string;
+  href?: string;
+}) {
+  return (
+    <div className="blockhead">
+      <p className="blockhead__label">
+        {label}
+        {qualifier && <span className="blockhead__qualifier">{qualifier}</span>}
+      </p>
+      {href ? (
+        <a className="blockhead__action" href={href} {...OUT}>
+          {action}
+        </a>
+      ) : (
+        <span className="blockhead__count">{action}</span>
+      )}
+    </div>
+  );
+}
+
 /* ============================================================= SKILLS */
 
 export function Skills() {
   return (
-    <section className="section skills" id="skills">
+    <section className="section" id="skills">
       <p className="eyebrow" data-reveal="0">
         <span className="rule-inline" aria-hidden="true" />
         {num("skills")} — Skills
       </p>
-      <h2 className="section__head" data-reveal="60">
-        The stack behind the work
-      </h2>
-      <p className="section__intro" data-reveal="100">
-        {skillsIntro}
-      </p>
 
-      {skillGroups.map((group, gi) => (
-        <div className="skills__group" key={group.label} data-reveal={120 + gi * 60}>
-          <h3 className="skills__label">{group.label}</h3>
-          <div className="cellgrid skills__grid">
-            {group.items.map((s) => (
-              <div className="skill" key={s.name}>
-                <Icon name={s.icon} className="skill__icon" />
-                <div className="skill__name">{s.name}</div>
-                <div className="skill__note">{s.note}</div>
-              </div>
-            ))}
-          </div>
+      <div className="sechead" data-reveal="60">
+        <h2 className="section__head sechead__title">
+          Three things I know cold. The rest I know well.
+        </h2>
+        <p className="sechead__intro">{skillsIntro}</p>
+      </div>
+
+      {/* The gold rule runs across the whole group, not per card — it marks
+          these three as the primary tier rather than decorating each one. */}
+      <div className="cellgrid core" data-reveal="120">
+        {coreSkills.map((c) => (
+          <article className="core__card" key={c.name}>
+            <div className="core__top">
+              <span className="core__kicker">{c.kicker}</span>
+              {/* Dots are decoration; the value itself is read out. */}
+              <span className="core__depth" aria-hidden="true">
+                {"●".repeat(c.depth)}
+                {"○".repeat(c.depthOf - c.depth)}
+              </span>
+              <span className="sr-only">
+                Depth {c.depth} of {c.depthOf}
+              </span>
+            </div>
+
+            <h3 className="core__name">{c.name}</h3>
+            <p className="core__note">{c.note}</p>
+
+            <div className="core__foot">
+              <span className="core__metric">{c.metric}</span>
+              <span className="core__metricnote">
+                {c.metricNote[0]}
+                <br />
+                {c.metricNote[1]}
+              </span>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <div className="block" data-reveal="160">
+        <BlockHead label="Also in the toolbox" action="Shipped, not skimmed" />
+        <div className="cellgrid tools">
+          {toolGroups.map((g) => (
+            <div className="tools__cell" key={g.label}>
+              <p className="tools__label">{g.label}</p>
+              <ul className="tools__list">
+                {g.items.map((i) => (
+                  <li className="tools__item" key={i.name}>
+                    <span className="tools__name">{i.name}</span>
+                    <span className="tools__desc">{i.descriptor}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
-      ))}
+      </div>
+
+      <div className="skills__foot" data-reveal="200">
+        <p className="section__note skills__closing">{skillsClosing}</p>
+        <a className="readlink" href={identity.resume} {...OUT}>
+          Full stack on the CV ↓
+        </a>
+      </div>
     </section>
   );
 }
@@ -210,35 +285,6 @@ export function Lab() {
 }
 
 /* ============================================================ ARCHIVE */
-
-/** Shared opener for each of the three archive blocks. */
-function BlockHead({
-  label,
-  qualifier,
-  action,
-  href,
-}: {
-  label: string;
-  qualifier: string;
-  action: string;
-  href?: string;
-}) {
-  return (
-    <div className="blockhead">
-      <p className="blockhead__label">
-        {label}
-        <span className="blockhead__qualifier">{qualifier}</span>
-      </p>
-      {href ? (
-        <a className="blockhead__action" href={href} {...OUT}>
-          {action}
-        </a>
-      ) : (
-        <span className="blockhead__count">{action}</span>
-      )}
-    </div>
-  );
-}
 
 export function Archive() {
   const id = youtubeId(archiveVideo.id);

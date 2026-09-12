@@ -33,6 +33,9 @@
   --accent-14: rgba(200, 169, 110, 0.14);
 
   --accent-hi: #e0c792;
+  /* A solid muted gold, not a tinted one. At 10px mono a tint of --accent
+     lands under 4.5:1; this is 5.3:1 on the page ground. */
+  --accent-muted: #9a8262;
 
   /* Section surfaces, lightest to darkest. `--well` is the terminal/embed
      ground — it sits *below* the page background on purpose, so an inset
@@ -1991,56 +1994,161 @@ button {
 
 /* ============================================================= SKILLS */
 
-.skills__group {
-  margin-top: 56px;
+/* Core three ---------------------------------------------------------- */
+
+/* The 2px gold rule sits on the group, not the cards. It is what says
+   "this tier is primary" — repeating it per card would just be decoration. */
+.core {
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  margin-top: clamp(30px, 3.4vw, 52px);
+  border-top: 2px solid var(--accent-50);
 }
 
-.skills__label {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 400;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--accent);
-  margin: 0 0 16px;
-}
-
-.skills__grid {
-  grid-template-columns: repeat(4, 1fr);
-}
-
-.skill {
-  padding: 26px 24px 28px;
+.core__card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: clamp(26px, 2.4vw, 34px) clamp(22px, 2vw, 30px) 28px;
+  background: linear-gradient(180deg, #15120f, #110f0e);
   transition: background 0.35s var(--ease);
 }
 
-.skill__icon {
-  display: block;
-  color: var(--text-40);
-  transition: color 0.35s var(--ease);
-}
-
-.skill__name {
-  font-size: 16px;
-  font-weight: 500;
-  margin-top: 26px;
-}
-
-.skill__note {
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-  line-height: 1.6;
-  color: var(--text-40);
-  margin-top: 8px;
-}
-
 @media (hover: hover) {
-  .skill:hover {
-    background: #141210;
+  .core__card:hover {
+    background: linear-gradient(180deg, #191510, #12100e);
   }
-  .skill:hover .skill__icon {
-    color: var(--accent);
-  }
+}
+
+.core__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.core__kicker {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--accent-muted);
+}
+
+.core__depth {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+/* "Elasticsearch" is one 13-character word and overflowed its column before
+   this — a serif at 40px has no break opportunity to fall back on. */
+.core__name {
+  font-family: var(--font-serif);
+  font-size: clamp(30px, 2.9vw, 40px);
+  font-weight: 500;
+  line-height: 1.05;
+  overflow-wrap: break-word;
+  margin: 0;
+}
+
+.core__note {
+  font-size: 15px;
+  line-height: 1.62;
+  color: var(--text-60);
+  text-wrap: pretty;
+  margin: 0;
+}
+
+.core__foot {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid var(--hairline);
+}
+
+.core__metric {
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--accent-hi);
+}
+
+.core__metricnote {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1.6;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-35);
+}
+
+/* Supporting cast ----------------------------------------------------- */
+
+.tools {
+  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+  margin-top: clamp(18px, 2vw, 28px);
+}
+
+.tools__cell {
+  padding: 24px 22px;
+  background: var(--surface-alt);
+}
+
+.tools__label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--text-35);
+  margin: 0 0 16px;
+}
+
+.tools__list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tools__name {
+  display: block;
+  font-family: var(--font-serif);
+  font-size: 19px;
+  font-weight: 500;
+  line-height: 1.15;
+  color: var(--text-80);
+}
+
+.tools__desc {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--text-35);
+  margin-top: 5px;
+}
+
+/* Closing row --------------------------------------------------------- */
+
+.skills__foot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-top: clamp(30px, 3.4vw, 52px);
+}
+
+.skills__closing {
+  margin: 0;
+  max-width: 44ch;
 }
 
 /* ================================================================ LAB */
@@ -2859,9 +2967,6 @@ button {
   :root {
     --gutter: 32px;
   }
-  .skills__grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
   .stats {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -3076,11 +3181,6 @@ button {
   .section {
     padding-bottom: 90px;
   }
-  /* Skill cards stay two-up: the content is short and 12 stacked cells is
-     an unreasonable amount of scrolling. */
-  .skills__grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
   /* An index row needs three columns of room. Below this the number joins the
      meta line and the title gets the full width. */
   .note {
@@ -3116,27 +3216,12 @@ button {
   .video__side {
     padding-top: 0;
   }
-  .skills__group {
-    margin-top: 40px;
+  .core__card,
+  .tools__cell {
+    padding: 22px 18px 24px;
   }
-  .skill {
-    padding: 20px 16px 22px;
-  }
-  .skill__name {
-    font-size: 15px;
-  }
-  .skill__note {
-    font-size: 11px;
-  }
-  .skill__name {
-    margin-top: 18px;
-  }
-  .lab__cell,
-  .writing__cell {
+  .lab__cell {
     padding: 26px 20px 28px;
-  }
-  .talk__body {
-    padding: 20px 20px 24px;
   }
   .section__head {
     max-width: none;
@@ -3336,15 +3421,11 @@ button {
   .result,
   .panel__results,
   .result__fill,
-  .role,
-  .skill,
-  .skill__icon,
-  .writing__cell,
-  .writing__title,
-  .talk,
-  .talk__title,
-  .talk__play,
-  .talk__thumb img,
+  .core__card,
+  .note,
+  .note__title,
+  .readlink,
+  .blockhead__action,
   .btn--primary,
   .ig__tile img {
     transition: none !important;
