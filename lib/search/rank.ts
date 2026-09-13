@@ -23,9 +23,7 @@ interface Doc {
 }
 
 function docTerms(p: Product): string[] {
-  return tokenize(
-    [p.title, p.brand, p.category, ...p.tags, ...p.diet].join(" "),
-  );
+  return tokenize([p.title, p.brand, p.category, ...p.tags, ...p.diet].join(" "));
 }
 
 const docs: Doc[] = catalogue.map((product) => {
@@ -97,8 +95,7 @@ const W = {
 function sizeFit(p: Product, q: ParsedQuery): number | null {
   if (!q.size || !p.size) return null;
   // Compare in a common base so "1 l" matches "1000 ml".
-  const toBase = (v: number, u: string) =>
-    u === "l" ? v * 1000 : u === "kg" ? v * 1000 : v;
+  const toBase = (v: number, u: string) => (u === "l" ? v * 1000 : u === "kg" ? v * 1000 : v);
   const a = toBase(q.size.value, q.size.unit);
   const b = toBase(p.size.value, p.size.unit);
   const liquidQ = q.size.unit === "l" || q.size.unit === "ml";
@@ -133,8 +130,10 @@ export function search(q: ParsedQuery, limit = 6): Hit[] {
       (q.diet.length > 0 && q.diet.every((d) => doc.product.diet.includes(d)));
     if (lexical === 0 && synonym === 0 && !attributeOnly) continue;
 
-    if (lexical) signals.push({ key: "lexical", label: "Lexical (BM25)", value: lexical * W.lexical });
-    if (synonym) signals.push({ key: "synonym", label: "Synonym expansion", value: synonym * W.synonym });
+    if (lexical)
+      signals.push({ key: "lexical", label: "Lexical (BM25)", value: lexical * W.lexical });
+    if (synonym)
+      signals.push({ key: "synonym", label: "Synonym expansion", value: synonym * W.synonym });
 
     if (q.category) {
       const match = q.category === doc.product.category;
@@ -143,7 +142,12 @@ export function search(q: ParsedQuery, limit = 6): Hit[] {
         (q.category === "milk" && doc.product.category === "milk alternative") ||
         (q.category === "milk alternative" && doc.product.category === "milk");
       if (match) signals.push({ key: "category", label: "Category match", value: W.category });
-      else if (!adjacent) signals.push({ key: "category", label: "Category mismatch", value: -W.category * 1.25 });
+      else if (!adjacent)
+        signals.push({
+          key: "category",
+          label: "Category mismatch",
+          value: -W.category * 1.25,
+        });
     }
 
     let filteredOut: string | undefined;
@@ -156,7 +160,11 @@ export function search(q: ParsedQuery, limit = 6): Hit[] {
         const missing = q.diet.filter((d) => !met.includes(d));
         // A hard dietary constraint is a filter, not a nudge — showing dairy
         // milk for "dairy free" is the classic relevance failure.
-        signals.push({ key: "diet", label: `Fails ${missing.join(", ")}`, value: -W.diet * 1.6 });
+        signals.push({
+          key: "diet",
+          label: `Fails ${missing.join(", ")}`,
+          value: -W.diet * 1.6,
+        });
         filteredOut = `demoted — not ${missing.join(", ")}`;
       }
     }
@@ -173,7 +181,11 @@ export function search(q: ParsedQuery, limit = 6): Hit[] {
     if (q.maxPrice !== undefined && doc.product.price > 0) {
       if (doc.product.price <= q.maxPrice) {
         const headroom = 1 - doc.product.price / q.maxPrice;
-        signals.push({ key: "price", label: "Within price ceiling", value: (0.4 + headroom * 0.6) * W.price });
+        signals.push({
+          key: "price",
+          label: "Within price ceiling",
+          value: (0.4 + headroom * 0.6) * W.price,
+        });
       } else {
         signals.push({ key: "price", label: "Over price ceiling", value: -W.price * 1.5 });
         filteredOut = `over ₹${q.maxPrice.toLocaleString("en-IN")}`;
@@ -195,6 +207,23 @@ export function search(q: ParsedQuery, limit = 6): Hit[] {
 
   hits.sort((a, b) => b.score - a.score);
   return hits.slice(0, limit);
+}
+
+/**
+ * The order the recall stage alone would have produced.
+ *
+ * Derived from the same hits rather than by running a second search, so the
+ * candidate set is guaranteed identical and only the ordering differs — which
+ * is the honest way to animate "BM25 got you here, the rescore moved you".
+ * Returns product ids, best first.
+ */
+export function recallOrder(hits: Hit[]): string[] {
+  const lex = (h: Hit) =>
+    h.signals.reduce(
+      (acc, x) => (x.key === "lexical" || x.key === "synonym" ? acc + x.value : acc),
+      0,
+    );
+  return [...hits].sort((a, b) => lex(b) - lex(a)).map((h) => h.product.id);
 }
 
 /** Squash an unbounded blend into 0–1 so the bars have a stable scale. */

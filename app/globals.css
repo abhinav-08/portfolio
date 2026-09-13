@@ -960,14 +960,259 @@ button {
   align-items: center;
   gap: 7px;
   white-space: nowrap;
+  /* The handoff's own contrast note: meta at 11px must not go below this.
+     --text-35 and darker fail at that size. */
+  color: var(--text-50);
 }
 .panel__status::before {
   content: "";
   width: 5px;
   height: 5px;
   border-radius: 50%;
+  background: var(--text-20);
+  transition: background 0.3s ease;
+}
+.panel__status.is-live {
+  color: var(--accent);
+}
+.panel__status.is-live::before {
   background: var(--accent);
   animation: pulse 2.4s ease-in-out infinite;
+}
+
+/* ---------------------------------------------------- the stage rail --
+ * Vertical, down the left of the panel body. Horizontal, it was a caption
+ * nobody read; stacked beside the thing each stage produces, the connector
+ * filling downward is the progress bar.
+ */
+
+.panel__body {
+  display: grid;
+  grid-template-columns: 148px minmax(0, 1fr);
+}
+
+.panel__main {
+  min-width: 0;
+  border-left: 1px solid var(--hairline);
+}
+
+/* The rail spans the whole body, so the three dots sit at the top, middle and
+   bottom of the thing they describe. At content height it stopped a third of
+   the way down and the pipeline looked like a caption instead of a spine. */
+.rail {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  margin: 0;
+  padding: 18px 14px 18px 16px;
+}
+
+.rail__step {
+  display: grid;
+  grid-template-columns: 9px minmax(0, 1fr);
+  gap: 11px;
+  min-height: 62px;
+}
+.rail__step {
+  flex: 1;
+}
+
+.rail__marker {
+  display: grid;
+  justify-items: center;
+  grid-template-rows: 9px 1fr;
+  height: 100%;
+}
+
+.rail__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--text-16);
+  transition: background 0.3s ease;
+}
+.rail__step.is-done .rail__dot {
+  background: var(--accent-40);
+}
+.rail__step.is-live .rail__dot {
+  position: relative;
+  background: var(--accent);
+}
+/* The running stage pings outward. The pseudo-element carries the scale so
+   the dot keeps its box and the rail never reflows. */
+.rail__step.is-live .rail__dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: railping 1.6s ease-out infinite;
+}
+
+@keyframes railping {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  70% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* The connector doubles as this stage's progress bar. */
+.rail__line {
+  position: relative;
+  width: 1px;
+  margin: 5px 0 -5px;
+  background: var(--text-16);
+  align-self: stretch;
+}
+
+.rail__fill {
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  transform-origin: 50% 0;
+}
+
+.rail__text {
+  display: block;
+  padding-top: 0;
+  line-height: 1.25;
+}
+
+.rail__name {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-32);
+  transition: color 0.3s ease;
+}
+.rail__step.is-done .rail__name {
+  color: var(--text-55);
+}
+.rail__step.is-live .rail__name {
+  color: var(--accent);
+}
+
+.rail__note {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  color: var(--text-20);
+  margin-top: 5px;
+  transition: color 0.3s ease;
+}
+.rail__step.is-live .rail__note {
+  color: var(--text-72);
+}
+
+.panel__title {
+  font-family: var(--font-mono);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-32);
+  transition: color 0.3s ease;
+}
+.panel__title.is-live {
+  color: var(--accent);
+}
+
+/* -------------------------------------------------- stage spotlights --
+ * While a run is live, the region the active stage is producing is lit — full
+ * strength, a faint gold ground and a gold edge down its left side — and the
+ * others recede. Relative opacity alone was too quiet to read as "this is the
+ * bit that is happening"; the edge marker is what makes it unmistakable.
+ *
+ * Only during a run. A settled panel lights nothing, or the section would look
+ * permanently half-disabled.
+ */
+.panel__body.is-running .panel__query,
+.panel__body.is-running .panel__chips,
+.panel__body.is-running .panel__results {
+  transition:
+    opacity 0.4s ease,
+    background 0.4s ease,
+    box-shadow 0.4s ease,
+    filter 0.4s ease;
+  opacity: 0.3;
+  filter: saturate(0.45);
+}
+
+.panel__body.is-running[data-stage="0"] .panel__query,
+.panel__body.is-running[data-stage="0"] .panel__chips,
+.panel__body.is-running[data-stage="1"] .panel__results,
+.panel__body.is-running[data-stage="2"] .panel__results {
+  opacity: 1;
+  filter: none;
+  background: rgba(200, 169, 110, 0.045);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+/* The query field already owns a background and a border of its own; tinting
+   it as well muddies the field treatment, so it takes the edge only. */
+.panel__body.is-running[data-stage="0"] .panel__query {
+  background: rgba(0, 0, 0, 0.36);
+  border-color: var(--accent-40);
+}
+
+/* rescore: the scores are the output. Bars and numbers come forward while the
+   titles hold still, so the eye goes to what is actually changing. */
+.panel__body.is-running[data-stage="2"] .result__fill {
+  box-shadow: 0 0 10px rgba(200, 169, 110, 0.55);
+}
+.panel__body.is-running[data-stage="2"] .result__score {
+  color: var(--accent);
+}
+.panel__body.is-running[data-stage="2"] .result__rank {
+  color: var(--accent-40);
+}
+
+/* parse: the chips ARE the output of this stage — each one is an entity the
+   parser just recognised. Lighting the strip alone was not enough; the chips
+   themselves take a gold edge and a halo so the eye lands on the breakdown
+   rather than on the field above it. */
+.panel__body.is-running[data-stage="0"] .chip {
+  border-color: var(--accent);
+  color: var(--accent-hi);
+  box-shadow: 0 0 14px rgba(200, 169, 110, 0.3);
+}
+.chip {
+  transition:
+    border-color 0.4s ease,
+    color 0.4s ease,
+    box-shadow 0.4s ease;
+}
+
+/* recall: the candidate rows are the output. Thumbs and titles come to full
+   strength while the score column stays muted — recall has not decided the
+   order yet, and showing the final numbers lit would give away the answer one
+   stage early. */
+.panel__body.is-running[data-stage="1"] .panel__results {
+  box-shadow:
+    inset 3px 0 0 var(--accent),
+    inset 0 0 40px rgba(200, 169, 110, 0.05);
+}
+.panel__body.is-running[data-stage="1"] .result__thumb {
+  box-shadow: 0 0 0 1px var(--accent-40);
+}
+.panel__body.is-running[data-stage="1"] .result__score,
+.panel__body.is-running[data-stage="1"] .result__fill {
+  opacity: 0.35;
+}
+.result__thumb,
+.result__score {
+  transition:
+    opacity 0.4s ease,
+    color 0.4s ease,
+    box-shadow 0.4s ease;
 }
 
 /* A borderless line of text reads as output, not input — nobody guessed they
@@ -1108,30 +1353,32 @@ button {
   }
 }
 
+/* Normal flow, not absolute slots at a fixed row height: a title that wraps
+   is taller than its slot, and the rows below it get overlapped. */
 .panel__results {
-  position: relative;
-  padding: 10px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 84px;
+  padding: 12px 0;
   border-bottom: 1px solid var(--hairline);
-  transition: height 0.45s var(--ease);
 }
 
+/* No transition on opacity or transform. The style object is rewritten every
+   frame by the stage clock, which restarts a transition each time and pins
+   the computed value at its start — the row would never actually fade in. */
 .result {
-  position: absolute;
-  top: 10px;
-  left: 0;
-  right: 0;
-  transition: transform 0.6s var(--ease);
-  will-change: transform;
+  will-change: opacity, transform;
 }
 
 .result__head {
   width: 100%;
-  height: 74px;
+  min-height: 62px;
   display: grid;
   grid-template-columns: 28px minmax(0, 1fr) 54px 40px 34px;
   gap: 10px;
   align-items: center;
-  padding: 0 16px;
+  padding: 10px 16px;
   text-align: left;
   transition: background 0.3s ease;
 }
@@ -1285,7 +1532,10 @@ button {
   display: block;
   height: 100%;
   background: var(--accent);
-  transition: width 0.7s var(--ease);
+  transition:
+    width 0.7s var(--ease),
+    opacity 0.4s ease,
+    box-shadow 0.4s ease;
 }
 
 .result__score {
@@ -3231,10 +3481,64 @@ button {
     gap: 12px;
   }
   .result__head {
-    height: 92px;
+    min-height: 72px;
     grid-template-columns: 18px minmax(0, 1fr) 32px 30px;
     gap: 7px;
-    padding: 0 11px;
+    padding: 10px 11px;
+  }
+  .panel__chrome {
+    flex-wrap: wrap;
+    gap: 8px 12px;
+  }
+  /* A 148px rail beside a 300px column leaves nothing for the results, so
+     below this the pipeline lies back down across the top. */
+  .panel__body {
+    grid-template-columns: 1fr;
+  }
+  .panel__main {
+    border-left: 0;
+    border-top: 1px solid var(--hairline);
+  }
+  .rail {
+    display: flex;
+    /* Explicit: the desktop rule now sets `column`, and without this the
+       horizontal strip inherits it and stacks. */
+    flex-direction: row;
+    padding: 12px 14px;
+    gap: 0;
+  }
+  .rail__step {
+    flex: 1;
+    grid-template-columns: 1fr;
+    grid-template-rows: 9px auto;
+    gap: 8px;
+    min-height: 0;
+  }
+  .rail__marker {
+    grid-template-rows: none;
+    grid-template-columns: 9px 1fr;
+    justify-items: start;
+    align-items: center;
+    height: 9px;
+    width: 100%;
+  }
+  .rail__line {
+    width: auto;
+    height: 1px;
+    margin: 0 0 0 5px;
+    align-self: center;
+    justify-self: stretch;
+  }
+  .rail__fill {
+    transform-origin: 0 50%;
+  }
+  .rail__note {
+    display: none;
+  }
+  /* Laid out horizontally there is nothing to the right of the last dot, so
+     its connector would point at nothing. */
+  .rail__step:last-child .rail__line {
+    display: none;
   }
   /* A 34px bar says nothing the number beside it doesn't. Reclaiming it gives
      the title and the "demoted — not gluten-free" note room to finish, which
@@ -3421,6 +3725,9 @@ button {
   .result,
   .panel__results,
   .result__fill,
+  .result__thumb,
+  .result__score,
+  .chip,
   .core__card,
   .note,
   .note__title,

@@ -674,40 +674,86 @@ const STOPWORDS = new Set([
         /\b(vegetarian|veg)\b/
     ]
 ];
-/** Category gazetteer — surface form → canonical category. */ const CATEGORY_TERMS = [
-    // Ordered most-specific first. A dairy-free/vegan qualifier in front of
-    // "milk" means the alternatives aisle, not the dairy one.
+/**
+ * Category gazetteer — surface form → canonical category.
+ *
+ * Order is significant: the first match wins, so the most specific pattern has
+ * to come first. A dairy-free or vegan qualifier in front of "milk" means the
+ * alternatives aisle, not the dairy one; "coconut water" is a drink while
+ * "coconut milk" is not.
+ *
+ * Every category used in catalogue.ts needs a line here. A product in a
+ * category no pattern reaches can still be found by its own words, but no
+ * query will ever route to its aisle.
+ */ const CATEGORY_TERMS = [
     [
         "milk alternative",
-        /\b(oat|almond|soy|soya|coconut) ?milk\b|\bmilk alt(ernative)?s?\b|\bplant milk\b|\b(dairy[\s-]?free|non[\s-]?dairy|vegan|plant[\s-]?based)\b[^.]{0,12}\bmilk\b/
+        /\b(oat|almond|soy|soya|coconut|cashew|rice) ?milk\b|\bmilk alt(ernative)?s?\b|\bplant milk\b|\b(dairy[\s-]?free|non[\s-]?dairy|vegan|plant[\s-]?based)\b[^.]{0,12}\bmilk\b/
+    ],
+    /* "frozen" sits above "dairy" deliberately: "ice cream" contains "cream",
+     and the first match wins. Reordering is cheaper than a lookbehind. */ [
+        "frozen",
+        /\b(frozen|freezer|ice cream|fries|paratha)\b/
+    ],
+    [
+        "dairy",
+        /\b(curd|dahi|yogh?urt|paneer|butter|makhan|cheese|mozzarella|ghee|cream|malai|lassi|chaas)\b/
     ],
     [
         "milk",
         /\bmilk\b|\bdoodh\b/
     ],
     [
+        "eggs",
+        /\b(eggs?|anda|ande)\b/
+    ],
+    [
         "bread",
-        /\bbread\b|\bloaf\b|\bbun\b|\bbakery\b/
+        /\b(bread|loaf|bun|pav|bakery|rusk|breadsticks?)\b/
+    ],
+    [
+        "breakfast",
+        /\b(oats|porridge|cereals?|cornflakes|corn flakes|muesli|granola|jam|honey|shahad|peanut butter|breakfast)\b/
     ],
     [
         "snacks",
-        /\bsnacks?\b|\bchips\b|\bcrisps\b|\bbiscuits?\b|\bcookies?\b|\bnamkeen\b|\bchocolate\b|\bnuts\b/
+        /\b(snacks?|chips|crisps|biscuits?|cookies?|namkeen|bhujia|sev|chocolates?|nuts|popcorn|makhana|noodles|maggi)\b/
     ],
     [
         "produce",
-        /\b(fruits?|vegetables?|veggies|produce|greens|salad)\b/
+        /\b(fruits?|vegetables?|veggies|produce|greens|salad|sabzi|sabji)\b/
+    ],
+    [
+        "spices",
+        /\b(spices?|masala|haldi|turmeric|chilli|chili|mirch|jeera|cumin|dhania|coriander powder|pepper|seasoning)\b/
+    ],
+    [
+        "condiments",
+        /\b(ketchup|sauces?|mayonnaise|mayo|pickles?|achar|chutney|vinegar|sirka|dips?)\b/
     ],
     [
         "staples",
-        /\b(rice|atta|flour|dal|lentils?|pulses|oil|staples?)\b/
+        /\b(rice|chawal|atta|flour|besan|sooji|rava|poha|dals?|lentils?|pulses|rajma|chana|oil|sugar|cheeni|salt|namak|staples?|grocer(y|ies)|ration)\b/
     ],
     [
         "beverages",
-        /\b(tea|coffee|juice|water|soda|drinks?|beverages?)\b/
+        /\b(tea|chai|coffee|juice|water|soda|cola|soft drinks?|drinks?|beverages?|milkshake)\b/
+    ],
+    [
+        "personal care",
+        /\b(soap|shampoo|toothpaste|handwash|sanitiser|sanitizer|deodorant|hair oil|sanitary|toilet paper|personal care|toiletries)\b/
+    ],
+    [
+        "baby",
+        /\b(baby|diapers?|nappy|wipes|infant|toddler)\b/
+    ],
+    [
+        "pet",
+        /\b(pet|dog|cat|kibble|litter)\b/
     ],
     [
         "household",
-        /\b(detergent|dishwash|cleaning|tissue|household)\b/
+        /\b(detergent|dishwash|bartan|cleaning|cleaner|disinfectant|phenyl|pocha|tissue|paper towels?|foil|cling film|garbage|bin bags?|dustbin|kachra|mop|scrub|sponge|duster|mosquito|machhar|pest|cockroach|insect|air freshener|room spray|bulb|matchbox|household|home essentials)\b/
     ]
 ];
 const UNIT_ALIASES = {
@@ -730,10 +776,111 @@ const UNIT_ALIASES = {
     kilogram: "kg"
 };
 const SYNONYMS = {
+    // staples & grains
     milk: [
         "dairy",
         "doodh"
     ],
+    rice: [
+        "chawal",
+        "basmati",
+        "grain"
+    ],
+    flour: [
+        "atta",
+        "chakki"
+    ],
+    atta: [
+        "flour",
+        "roti"
+    ],
+    lentil: [
+        "dal",
+        "pulses",
+        "toor"
+    ],
+    dal: [
+        "lentil",
+        "pulses"
+    ],
+    chickpea: [
+        "chana",
+        "chole",
+        "kabuli"
+    ],
+    oil: [
+        "ghani",
+        "cooking oil"
+    ],
+    sugar: [
+        "cheeni",
+        "sweetener"
+    ],
+    salt: [
+        "namak"
+    ],
+    jaggery: [
+        "gur",
+        "sweetener"
+    ],
+    poha: [
+        "flattened rice"
+    ],
+    sooji: [
+        "rava",
+        "semolina"
+    ],
+    besan: [
+        "gram flour",
+        "chickpea"
+    ],
+    // dairy
+    curd: [
+        "dahi",
+        "yoghurt",
+        "yogurt"
+    ],
+    yoghurt: [
+        "curd",
+        "dahi"
+    ],
+    paneer: [
+        "cottage cheese"
+    ],
+    butter: [
+        "makhan"
+    ],
+    ghee: [
+        "clarified butter"
+    ],
+    cream: [
+        "malai"
+    ],
+    egg: [
+        "anda",
+        "ande"
+    ],
+    // bakery & breakfast
+    bread: [
+        "loaf",
+        "atta"
+    ],
+    bun: [
+        "pav"
+    ],
+    oats: [
+        "porridge",
+        "cereal"
+    ],
+    cereal: [
+        "flakes",
+        "muesli",
+        "granola"
+    ],
+    honey: [
+        "shahad"
+    ],
+    // snacks
     chips: [
         "crisps",
         "wafers",
@@ -747,43 +894,24 @@ const SYNONYMS = {
     cookies: [
         "biscuits"
     ],
-    bread: [
-        "loaf",
-        "atta"
+    namkeen: [
+        "bhujia",
+        "sev",
+        "mixture"
     ],
-    rice: [
-        "chawal",
-        "basmati",
-        "grain"
+    nuts: [
+        "almonds",
+        "dry fruit",
+        "cashew"
     ],
-    flour: [
-        "atta",
-        "chakki"
+    noodles: [
+        "maggi",
+        "instant"
     ],
-    lentil: [
-        "dal",
-        "pulses",
-        "toor"
+    makhana: [
+        "fox nuts"
     ],
-    dal: [
-        "lentil",
-        "pulses"
-    ],
-    oil: [
-        "ghani",
-        "cooking oil"
-    ],
-    tea: [
-        "chai"
-    ],
-    coffee: [
-        "caffeine",
-        "brew"
-    ],
-    water: [
-        "soda",
-        "sparkling"
-    ],
+    // produce
     spinach: [
         "palak",
         "greens",
@@ -798,6 +926,124 @@ const SYNONYMS = {
     banana: [
         "kela"
     ],
+    onion: [
+        "pyaz"
+    ],
+    potato: [
+        "aloo"
+    ],
+    apple: [
+        "seb"
+    ],
+    mango: [
+        "aam"
+    ],
+    lemon: [
+        "nimbu"
+    ],
+    cucumber: [
+        "kheera"
+    ],
+    ginger: [
+        "adrak"
+    ],
+    garlic: [
+        "lehsun"
+    ],
+    cauliflower: [
+        "gobi"
+    ],
+    okra: [
+        "bhindi",
+        "lady finger"
+    ],
+    peas: [
+        "matar"
+    ],
+    corn: [
+        "makai",
+        "sweet corn"
+    ],
+    coriander: [
+        "dhania"
+    ],
+    // spices & condiments
+    turmeric: [
+        "haldi"
+    ],
+    chilli: [
+        "mirch",
+        "spicy"
+    ],
+    cumin: [
+        "jeera"
+    ],
+    pepper: [
+        "kali mirch"
+    ],
+    masala: [
+        "spice",
+        "blend",
+        "seasoning"
+    ],
+    pickle: [
+        "achar"
+    ],
+    ketchup: [
+        "sauce",
+        "tamatar"
+    ],
+    vinegar: [
+        "sirka"
+    ],
+    // beverages
+    tea: [
+        "chai"
+    ],
+    coffee: [
+        "caffeine",
+        "brew"
+    ],
+    water: [
+        "soda",
+        "sparkling"
+    ],
+    // household
+    detergent: [
+        "washing",
+        "laundry",
+        "kapda"
+    ],
+    dishwash: [
+        "bartan",
+        "utensil"
+    ],
+    cleaner: [
+        "cleaning",
+        "disinfectant"
+    ],
+    floor: [
+        "pocha",
+        "phenyl"
+    ],
+    tissue: [
+        "paper towels",
+        "roll"
+    ],
+    garbage: [
+        "bin bags",
+        "dustbin",
+        "kachra"
+    ],
+    mosquito: [
+        "machhar",
+        "repellent"
+    ],
+    pest: [
+        "insect",
+        "cockroach"
+    ],
+    // intent-ish
     cheap: [
         "budget",
         "value"
@@ -806,14 +1052,6 @@ const SYNONYMS = {
         "baked",
         "millet",
         "protein"
-    ],
-    nuts: [
-        "almonds",
-        "dry fruit"
-    ],
-    detergent: [
-        "washing",
-        "laundry"
     ]
 };
 /**
@@ -989,12 +1227,21 @@ if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelper
 "use strict";
 
 /**
- * A small grocery catalogue for the live search demo.
+ * A grocery and household catalogue for the live search demo.
  *
  * Everything here is invented product data — the point is the retrieval and
  * ranking code in ./parse.ts and ./rank.ts, which is real. `ctr` and `atc` are
  * synthetic demand priors standing in for what a real deployment learns from
  * click logs; they are labelled as such in the UI.
+ *
+ * Two rules when adding rows:
+ *
+ *  1. `diet` is a claim, not a tag. Only list what the product genuinely
+ *     satisfies — the dietary signal is a hard filter in rank.ts, so a wrong
+ *     entry here shows up as a wrong answer on the page. Dairy is
+ *     `vegetarian`, never `vegan`; eggs are neither.
+ *  2. A new `category` needs a matching entry in CATEGORY_TERMS in parse.ts,
+ *     or nothing a visitor types will ever route to it.
  */ __turbopack_context__.s([
     "catalogue",
     ()=>catalogue
@@ -1085,7 +1332,9 @@ const catalogue = [
             unit: "l"
         },
         price: 72,
-        diet: [],
+        diet: [
+            "vegetarian"
+        ],
         ctr: 0.61,
         atc: 0.48
     },
@@ -1103,7 +1352,9 @@ const catalogue = [
             unit: "ml"
         },
         price: 31,
-        diet: [],
+        diet: [
+            "vegetarian"
+        ],
         ctr: 0.55,
         atc: 0.44
     },
@@ -1122,7 +1373,8 @@ const catalogue = [
         },
         price: 118,
         diet: [
-            "lactose-free"
+            "lactose-free",
+            "vegetarian"
         ],
         ctr: 0.22,
         atc: 0.17
@@ -1150,6 +1402,378 @@ const catalogue = [
         ctr: 0.19,
         atc: 0.14
     },
+    {
+        id: "p08",
+        title: "Double-toned milk",
+        brand: "Amul",
+        category: "milk",
+        tags: [
+            "dairy",
+            "skimmed",
+            "low fat"
+        ],
+        size: {
+            value: 1,
+            unit: "l"
+        },
+        price: 66,
+        diet: [
+            "vegetarian"
+        ],
+        ctr: 0.34,
+        atc: 0.27
+    },
+    {
+        id: "p09",
+        title: "Buffalo milk",
+        brand: "Gokul",
+        category: "milk",
+        tags: [
+            "dairy",
+            "full fat",
+            "creamy"
+        ],
+        size: {
+            value: 1,
+            unit: "l"
+        },
+        price: 84,
+        diet: [
+            "vegetarian"
+        ],
+        ctr: 0.18,
+        atc: 0.14
+    },
+    {
+        id: "p0a",
+        title: "Rice milk",
+        brand: "Nutrimix",
+        category: "milk alternative",
+        tags: [
+            "rice",
+            "plant based"
+        ],
+        size: {
+            value: 1,
+            unit: "l"
+        },
+        price: 175,
+        diet: [
+            "dairy-free",
+            "lactose-free",
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.09,
+        atc: 0.06
+    },
+    {
+        id: "p0b",
+        title: "Cashew milk, barista",
+        brand: "Sofit",
+        category: "milk alternative",
+        tags: [
+            "cashew",
+            "plant based",
+            "nut",
+            "barista"
+        ],
+        size: {
+            value: 1,
+            unit: "l"
+        },
+        price: 210,
+        diet: [
+            "dairy-free",
+            "lactose-free",
+            "vegan"
+        ],
+        ctr: 0.13,
+        atc: 0.09
+    },
+    {
+        id: "p0c",
+        title: "Condensed milk",
+        brand: "Nestlé",
+        category: "dairy",
+        tags: [
+            "milkmaid",
+            "dessert",
+            "baking",
+            "sweet"
+        ],
+        size: {
+            value: 400,
+            unit: "g"
+        },
+        price: 135,
+        diet: [
+            "vegetarian"
+        ],
+        ctr: 0.25,
+        atc: 0.2
+    },
+    // ---- dairy ---------------------------------------------------------------
+    {
+        id: "p70",
+        title: "Fresh curd",
+        brand: "Mother Dairy",
+        category: "dairy",
+        tags: [
+            "dahi",
+            "yoghurt",
+            "probiotic"
+        ],
+        size: {
+            value: 400,
+            unit: "g"
+        },
+        price: 55,
+        diet: [
+            "vegetarian",
+            "gluten-free"
+        ],
+        ctr: 0.62,
+        atc: 0.53
+    },
+    {
+        id: "p71",
+        title: "Greek yoghurt, plain",
+        brand: "Epigamia",
+        category: "dairy",
+        tags: [
+            "yogurt",
+            "high protein",
+            "dahi"
+        ],
+        size: {
+            value: 400,
+            unit: "g"
+        },
+        price: 150,
+        diet: [
+            "vegetarian",
+            "gluten-free"
+        ],
+        ctr: 0.38,
+        atc: 0.29
+    },
+    {
+        id: "p72",
+        title: "Paneer block",
+        brand: "Amul",
+        category: "dairy",
+        tags: [
+            "cottage cheese",
+            "malai",
+            "protein"
+        ],
+        size: {
+            value: 200,
+            unit: "g"
+        },
+        price: 95,
+        diet: [
+            "vegetarian",
+            "gluten-free"
+        ],
+        ctr: 0.57,
+        atc: 0.48
+    },
+    {
+        id: "p73",
+        title: "Salted butter",
+        brand: "Amul",
+        category: "dairy",
+        tags: [
+            "makhan",
+            "spread",
+            "baking"
+        ],
+        size: {
+            value: 500,
+            unit: "g"
+        },
+        price: 275,
+        diet: [
+            "vegetarian",
+            "gluten-free"
+        ],
+        ctr: 0.59,
+        atc: 0.5
+    },
+    {
+        id: "p74",
+        title: "Cheese slices",
+        brand: "Britannia",
+        category: "dairy",
+        tags: [
+            "processed cheese",
+            "sandwich"
+        ],
+        size: {
+            value: 200,
+            unit: "g"
+        },
+        price: 140,
+        diet: [
+            "vegetarian"
+        ],
+        ctr: 0.44,
+        atc: 0.36
+    },
+    {
+        id: "p75",
+        title: "Mozzarella, shredded",
+        brand: "Go",
+        category: "dairy",
+        tags: [
+            "pizza cheese",
+            "cheese"
+        ],
+        size: {
+            value: 200,
+            unit: "g"
+        },
+        price: 185,
+        diet: [
+            "vegetarian",
+            "gluten-free"
+        ],
+        ctr: 0.33,
+        atc: 0.26
+    },
+    {
+        id: "p76",
+        title: "Cow ghee",
+        brand: "Amul",
+        category: "dairy",
+        tags: [
+            "clarified butter",
+            "desi ghee"
+        ],
+        size: {
+            value: 1,
+            unit: "l"
+        },
+        price: 650,
+        diet: [
+            "vegetarian",
+            "gluten-free"
+        ],
+        ctr: 0.47,
+        atc: 0.4
+    },
+    {
+        id: "p77",
+        title: "Fresh cream",
+        brand: "Amul",
+        category: "dairy",
+        tags: [
+            "malai",
+            "whipping",
+            "dessert"
+        ],
+        size: {
+            value: 250,
+            unit: "ml"
+        },
+        price: 90,
+        diet: [
+            "vegetarian",
+            "gluten-free"
+        ],
+        ctr: 0.3,
+        atc: 0.24
+    },
+    {
+        id: "p78",
+        title: "Probiotic lassi, sweet",
+        brand: "Mother Dairy",
+        category: "dairy",
+        tags: [
+            "chaas",
+            "yoghurt drink"
+        ],
+        size: {
+            value: 200,
+            unit: "ml"
+        },
+        price: 25,
+        diet: [
+            "vegetarian",
+            "gluten-free"
+        ],
+        ctr: 0.36,
+        atc: 0.3
+    },
+    {
+        id: "p79",
+        title: "Vegan curd, coconut",
+        brand: "Epigamia",
+        category: "dairy",
+        tags: [
+            "dahi",
+            "plant based",
+            "coconut"
+        ],
+        size: {
+            value: 200,
+            unit: "g"
+        },
+        price: 120,
+        diet: [
+            "vegan",
+            "dairy-free",
+            "lactose-free",
+            "gluten-free"
+        ],
+        ctr: 0.11,
+        atc: 0.08
+    },
+    // ---- eggs ----------------------------------------------------------------
+    {
+        id: "p80",
+        title: "Farm eggs, brown",
+        brand: "Eggoz",
+        category: "eggs",
+        tags: [
+            "anda",
+            "protein",
+            "free range"
+        ],
+        size: {
+            value: 6,
+            unit: "pack"
+        },
+        price: 90,
+        diet: [
+            "gluten-free"
+        ],
+        ctr: 0.54,
+        atc: 0.46
+    },
+    {
+        id: "p81",
+        title: "White eggs, tray",
+        brand: "Suguna",
+        category: "eggs",
+        tags: [
+            "anda",
+            "protein",
+            "bulk"
+        ],
+        size: {
+            value: 30,
+            unit: "pack"
+        },
+        price: 330,
+        diet: [
+            "gluten-free"
+        ],
+        ctr: 0.41,
+        atc: 0.35
+    },
     // ---- bread & bakery ------------------------------------------------------
     {
         id: "p10",
@@ -1166,7 +1790,9 @@ const catalogue = [
             unit: "g"
         },
         price: 55,
-        diet: [],
+        diet: [
+            "vegetarian"
+        ],
         ctr: 0.47,
         atc: 0.39
     },
@@ -1185,7 +1811,9 @@ const catalogue = [
             unit: "g"
         },
         price: 68,
-        diet: [],
+        diet: [
+            "vegetarian"
+        ],
         ctr: 0.33,
         atc: 0.26
     },
@@ -1204,7 +1832,8 @@ const catalogue = [
         },
         price: 210,
         diet: [
-            "gluten-free"
+            "gluten-free",
+            "vegetarian"
         ],
         ctr: 0.12,
         atc: 0.09
@@ -1223,9 +1852,288 @@ const catalogue = [
             unit: "g"
         },
         price: 240,
-        diet: [],
+        diet: [
+            "vegetarian"
+        ],
         ctr: 0.21,
         atc: 0.15
+    },
+    {
+        id: "p14",
+        title: "White sandwich bread",
+        brand: "Britannia",
+        category: "bread",
+        tags: [
+            "loaf",
+            "maida",
+            "sandwich"
+        ],
+        size: {
+            value: 400,
+            unit: "g"
+        },
+        price: 45,
+        diet: [
+            "vegetarian"
+        ],
+        ctr: 0.5,
+        atc: 0.43
+    },
+    {
+        id: "p15",
+        title: "Burger buns",
+        brand: "Harvest Gold",
+        category: "bread",
+        tags: [
+            "bun",
+            "pav",
+            "bakery"
+        ],
+        size: {
+            value: 6,
+            unit: "pack"
+        },
+        price: 50,
+        diet: [
+            "vegetarian"
+        ],
+        ctr: 0.3,
+        atc: 0.25
+    },
+    {
+        id: "p16",
+        title: "Ladi pav",
+        brand: "Modern",
+        category: "bread",
+        tags: [
+            "bun",
+            "pav bhaji",
+            "bakery"
+        ],
+        size: {
+            value: 6,
+            unit: "pack"
+        },
+        price: 40,
+        diet: [
+            "vegetarian"
+        ],
+        ctr: 0.35,
+        atc: 0.3
+    },
+    {
+        id: "p17",
+        title: "Garlic breadsticks",
+        brand: "Theobroma",
+        category: "bread",
+        tags: [
+            "bakery",
+            "sticks",
+            "herb"
+        ],
+        size: {
+            value: 200,
+            unit: "g"
+        },
+        price: 160,
+        diet: [
+            "vegetarian"
+        ],
+        ctr: 0.15,
+        atc: 0.11
+    },
+    {
+        id: "p18",
+        title: "Brown rusk, elaichi",
+        brand: "Britannia",
+        category: "bread",
+        tags: [
+            "toast",
+            "tea time",
+            "bakery"
+        ],
+        size: {
+            value: 300,
+            unit: "g"
+        },
+        price: 60,
+        diet: [
+            "vegetarian"
+        ],
+        ctr: 0.27,
+        atc: 0.22
+    },
+    // ---- breakfast -----------------------------------------------------------
+    {
+        id: "p90",
+        title: "Rolled oats",
+        brand: "Quaker",
+        category: "breakfast",
+        tags: [
+            "oats",
+            "porridge",
+            "cereal",
+            "fibre"
+        ],
+        size: {
+            value: 1,
+            unit: "kg"
+        },
+        price: 215,
+        diet: [
+            "vegan"
+        ],
+        ctr: 0.52,
+        atc: 0.44
+    },
+    {
+        id: "p91",
+        title: "Corn flakes, original",
+        brand: "Kellogg's",
+        category: "breakfast",
+        tags: [
+            "cereal",
+            "flakes"
+        ],
+        size: {
+            value: 475,
+            unit: "g"
+        },
+        price: 240,
+        diet: [
+            "vegetarian"
+        ],
+        ctr: 0.44,
+        atc: 0.36
+    },
+    {
+        id: "p92",
+        title: "Fruit & nut muesli",
+        brand: "Bagrry's",
+        category: "breakfast",
+        tags: [
+            "cereal",
+            "granola",
+            "oats"
+        ],
+        size: {
+            value: 700,
+            unit: "g"
+        },
+        price: 420,
+        diet: [
+            "vegetarian"
+        ],
+        ctr: 0.3,
+        atc: 0.24
+    },
+    {
+        id: "p93",
+        title: "Peanut butter, crunchy",
+        brand: "Pintola",
+        category: "breakfast",
+        tags: [
+            "spread",
+            "protein",
+            "nut butter"
+        ],
+        size: {
+            value: 1,
+            unit: "kg"
+        },
+        price: 450,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.41,
+        atc: 0.34
+    },
+    {
+        id: "p94",
+        title: "Mixed fruit jam",
+        brand: "Kissan",
+        category: "breakfast",
+        tags: [
+            "spread",
+            "preserve",
+            "sweet"
+        ],
+        size: {
+            value: 700,
+            unit: "g"
+        },
+        price: 210,
+        diet: [
+            "vegetarian",
+            "gluten-free"
+        ],
+        ctr: 0.38,
+        atc: 0.31
+    },
+    {
+        id: "p95",
+        title: "Raw forest honey",
+        brand: "Dabur",
+        category: "breakfast",
+        tags: [
+            "shahad",
+            "sweetener",
+            "natural"
+        ],
+        size: {
+            value: 1,
+            unit: "kg"
+        },
+        price: 480,
+        diet: [
+            "vegetarian",
+            "gluten-free"
+        ],
+        ctr: 0.35,
+        atc: 0.28
+    },
+    {
+        id: "p96",
+        title: "Instant poha mix",
+        brand: "MTR",
+        category: "breakfast",
+        tags: [
+            "flattened rice",
+            "ready mix"
+        ],
+        size: {
+            value: 80,
+            unit: "g"
+        },
+        price: 45,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.19,
+        atc: 0.15
+    },
+    {
+        id: "p97",
+        title: "Chocolate health drink mix",
+        brand: "Bournvita",
+        category: "breakfast",
+        tags: [
+            "malt",
+            "milk additive",
+            "kids"
+        ],
+        size: {
+            value: 750,
+            unit: "g"
+        },
+        price: 380,
+        diet: [
+            "vegetarian"
+        ],
+        ctr: 0.4,
+        atc: 0.33
     },
     // ---- snacks --------------------------------------------------------------
     {
@@ -1357,6 +2265,201 @@ const catalogue = [
         ctr: 0.31,
         atc: 0.23
     },
+    {
+        id: "p26",
+        title: "Aloo bhujia",
+        brand: "Haldiram's",
+        category: "snacks",
+        tags: [
+            "namkeen",
+            "sev",
+            "spicy"
+        ],
+        size: {
+            value: 400,
+            unit: "g"
+        },
+        price: 110,
+        diet: [
+            "vegetarian"
+        ],
+        ctr: 0.58,
+        atc: 0.49
+    },
+    {
+        id: "p27",
+        title: "Masala peanuts",
+        brand: "Haldiram's",
+        category: "snacks",
+        tags: [
+            "namkeen",
+            "moongphali",
+            "spicy"
+        ],
+        size: {
+            value: 200,
+            unit: "g"
+        },
+        price: 65,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.42,
+        atc: 0.35
+    },
+    {
+        id: "p28",
+        title: "Marie biscuits",
+        brand: "Britannia",
+        category: "snacks",
+        tags: [
+            "cookies",
+            "tea time",
+            "light"
+        ],
+        size: {
+            value: 300,
+            unit: "g"
+        },
+        price: 45,
+        diet: [
+            "vegetarian"
+        ],
+        ctr: 0.5,
+        atc: 0.44
+    },
+    {
+        id: "p29",
+        title: "Choco-chip cookies",
+        brand: "Unibic",
+        category: "snacks",
+        tags: [
+            "biscuits",
+            "sweet",
+            "chocolate"
+        ],
+        size: {
+            value: 250,
+            unit: "g"
+        },
+        price: 120,
+        diet: [
+            "vegetarian"
+        ],
+        ctr: 0.37,
+        atc: 0.3
+    },
+    {
+        id: "p2a",
+        title: "Salted popcorn",
+        brand: "Act II",
+        category: "snacks",
+        tags: [
+            "microwave",
+            "corn",
+            "movie"
+        ],
+        size: {
+            value: 3,
+            unit: "pack"
+        },
+        price: 90,
+        diet: [
+            "vegetarian",
+            "gluten-free"
+        ],
+        ctr: 0.29,
+        atc: 0.24
+    },
+    {
+        id: "p2b",
+        title: "Mixed dry fruits",
+        brand: "Happilo",
+        category: "snacks",
+        tags: [
+            "nuts",
+            "raisins",
+            "cashew",
+            "dry fruit"
+        ],
+        size: {
+            value: 500,
+            unit: "g"
+        },
+        price: 620,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.33,
+        atc: 0.26
+    },
+    {
+        id: "p2c",
+        title: "Makhana, roasted peri-peri",
+        brand: "Farmley",
+        category: "snacks",
+        tags: [
+            "fox nuts",
+            "healthy",
+            "baked"
+        ],
+        size: {
+            value: 100,
+            unit: "g"
+        },
+        price: 150,
+        diet: [
+            "vegetarian",
+            "gluten-free"
+        ],
+        ctr: 0.21,
+        atc: 0.16
+    },
+    {
+        id: "p2d",
+        title: "Instant noodles, masala",
+        brand: "Maggi",
+        category: "snacks",
+        tags: [
+            "ready to eat",
+            "2 minute",
+            "noodles"
+        ],
+        size: {
+            value: 12,
+            unit: "pack"
+        },
+        price: 168,
+        diet: [
+            "vegetarian"
+        ],
+        ctr: 0.71,
+        atc: 0.63
+    },
+    {
+        id: "p2e",
+        title: "Sugar-free dark chocolate",
+        brand: "Sugarfree",
+        category: "snacks",
+        tags: [
+            "cocoa",
+            "diabetic",
+            "bar"
+        ],
+        size: {
+            value: 80,
+            unit: "g"
+        },
+        price: 140,
+        diet: [
+            "sugar-free",
+            "vegetarian"
+        ],
+        ctr: 0.14,
+        atc: 0.1
+    },
     // ---- produce -------------------------------------------------------------
     {
         id: "p30",
@@ -1471,6 +2574,345 @@ const catalogue = [
         ctr: 0.24,
         atc: 0.18
     },
+    {
+        id: "p35",
+        title: "Onions",
+        brand: "Fresho",
+        category: "produce",
+        tags: [
+            "vegetable",
+            "pyaz",
+            "fresh"
+        ],
+        size: {
+            value: 2,
+            unit: "kg"
+        },
+        price: 70,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.77,
+        atc: 0.7
+    },
+    {
+        id: "p36",
+        title: "Potatoes",
+        brand: "Fresho",
+        category: "produce",
+        tags: [
+            "vegetable",
+            "aloo",
+            "fresh"
+        ],
+        size: {
+            value: 2,
+            unit: "kg"
+        },
+        price: 60,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.75,
+        atc: 0.68
+    },
+    {
+        id: "p37",
+        title: "Organic cauliflower",
+        brand: "24 Mantra",
+        category: "produce",
+        tags: [
+            "vegetable",
+            "gobi",
+            "fresh"
+        ],
+        size: {
+            value: 1,
+            unit: "kg"
+        },
+        price: 95,
+        diet: [
+            "vegan",
+            "gluten-free",
+            "organic"
+        ],
+        ctr: 0.26,
+        atc: 0.2
+    },
+    {
+        id: "p38",
+        title: "Green capsicum",
+        brand: "Fresho",
+        category: "produce",
+        tags: [
+            "vegetable",
+            "shimla mirch",
+            "fresh"
+        ],
+        size: {
+            value: 500,
+            unit: "g"
+        },
+        price: 55,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.31,
+        atc: 0.25
+    },
+    {
+        id: "p39",
+        title: "Lady finger",
+        brand: "Fresho",
+        category: "produce",
+        tags: [
+            "vegetable",
+            "bhindi",
+            "okra",
+            "fresh"
+        ],
+        size: {
+            value: 500,
+            unit: "g"
+        },
+        price: 40,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.34,
+        atc: 0.28
+    },
+    {
+        id: "p3a",
+        title: "Coriander leaves",
+        brand: "Fresho",
+        category: "produce",
+        tags: [
+            "herb",
+            "dhania",
+            "garnish",
+            "fresh"
+        ],
+        size: {
+            value: 100,
+            unit: "g"
+        },
+        price: 15,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.46,
+        atc: 0.4
+    },
+    {
+        id: "p3b",
+        title: "Ginger",
+        brand: "Fresho",
+        category: "produce",
+        tags: [
+            "adrak",
+            "aromatic",
+            "fresh"
+        ],
+        size: {
+            value: 250,
+            unit: "g"
+        },
+        price: 45,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.43,
+        atc: 0.37
+    },
+    {
+        id: "p3c",
+        title: "Garlic",
+        brand: "Fresho",
+        category: "produce",
+        tags: [
+            "lehsun",
+            "aromatic",
+            "fresh"
+        ],
+        size: {
+            value: 250,
+            unit: "g"
+        },
+        price: 60,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.45,
+        atc: 0.39
+    },
+    {
+        id: "p3d",
+        title: "Apples, Shimla",
+        brand: "Fresho",
+        category: "produce",
+        tags: [
+            "fruit",
+            "seb",
+            "fresh"
+        ],
+        size: {
+            value: 1,
+            unit: "kg"
+        },
+        price: 180,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.52,
+        atc: 0.43
+    },
+    {
+        id: "p3e",
+        title: "Alphonso mangoes",
+        brand: "Fresho",
+        category: "produce",
+        tags: [
+            "fruit",
+            "aam",
+            "seasonal",
+            "fresh"
+        ],
+        size: {
+            value: 1,
+            unit: "kg"
+        },
+        price: 650,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.4,
+        atc: 0.3
+    },
+    {
+        id: "p3f",
+        title: "Seedless grapes",
+        brand: "Fresho",
+        category: "produce",
+        tags: [
+            "fruit",
+            "angoor",
+            "fresh"
+        ],
+        size: {
+            value: 500,
+            unit: "g"
+        },
+        price: 95,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.37,
+        atc: 0.3
+    },
+    {
+        id: "p3g",
+        title: "Organic baby spinach",
+        brand: "24 Mantra",
+        category: "produce",
+        tags: [
+            "greens",
+            "leafy",
+            "palak",
+            "salad"
+        ],
+        size: {
+            value: 200,
+            unit: "g"
+        },
+        price: 80,
+        diet: [
+            "vegan",
+            "gluten-free",
+            "organic"
+        ],
+        ctr: 0.17,
+        atc: 0.13
+    },
+    {
+        id: "p3h",
+        title: "Lemons",
+        brand: "Fresho",
+        category: "produce",
+        tags: [
+            "fruit",
+            "nimbu",
+            "fresh"
+        ],
+        size: {
+            value: 500,
+            unit: "g"
+        },
+        price: 50,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.48,
+        atc: 0.42
+    },
+    {
+        id: "p3i",
+        title: "Cucumber",
+        brand: "Fresho",
+        category: "produce",
+        tags: [
+            "vegetable",
+            "kheera",
+            "salad",
+            "fresh"
+        ],
+        size: {
+            value: 500,
+            unit: "g"
+        },
+        price: 35,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.39,
+        atc: 0.33
+    },
+    {
+        id: "p3j",
+        title: "Organic mixed salad leaves",
+        brand: "24 Mantra",
+        category: "produce",
+        tags: [
+            "greens",
+            "lettuce",
+            "salad",
+            "leafy"
+        ],
+        size: {
+            value: 150,
+            unit: "g"
+        },
+        price: 140,
+        diet: [
+            "vegan",
+            "gluten-free",
+            "organic"
+        ],
+        ctr: 0.15,
+        atc: 0.11
+    },
     // ---- staples -------------------------------------------------------------
     {
         id: "p40",
@@ -1582,6 +3024,751 @@ const catalogue = [
         ctr: 0.16,
         atc: 0.12
     },
+    {
+        id: "p45",
+        title: "Sona masoori rice",
+        brand: "Daawat",
+        category: "staples",
+        tags: [
+            "chawal",
+            "grain",
+            "everyday"
+        ],
+        size: {
+            value: 10,
+            unit: "kg"
+        },
+        price: 720,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.44,
+        atc: 0.38
+    },
+    {
+        id: "p46",
+        title: "Moong dal, yellow",
+        brand: "Tata Sampann",
+        category: "staples",
+        tags: [
+            "lentil",
+            "pulses",
+            "split"
+        ],
+        size: {
+            value: 1,
+            unit: "kg"
+        },
+        price: 165,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.4,
+        atc: 0.34
+    },
+    {
+        id: "p47",
+        title: "Chana dal",
+        brand: "Tata Sampann",
+        category: "staples",
+        tags: [
+            "lentil",
+            "pulses",
+            "bengal gram"
+        ],
+        size: {
+            value: 1,
+            unit: "kg"
+        },
+        price: 120,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.36,
+        atc: 0.31
+    },
+    {
+        id: "p48",
+        title: "Rajma, chitra",
+        brand: "24 Mantra",
+        category: "staples",
+        tags: [
+            "kidney beans",
+            "pulses",
+            "organic"
+        ],
+        size: {
+            value: 500,
+            unit: "g"
+        },
+        price: 140,
+        diet: [
+            "vegan",
+            "gluten-free",
+            "organic"
+        ],
+        ctr: 0.24,
+        atc: 0.19
+    },
+    {
+        id: "p49",
+        title: "Kabuli chana",
+        brand: "Tata Sampann",
+        category: "staples",
+        tags: [
+            "chickpeas",
+            "pulses",
+            "chole"
+        ],
+        size: {
+            value: 1,
+            unit: "kg"
+        },
+        price: 150,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.33,
+        atc: 0.28
+    },
+    {
+        id: "p4a",
+        title: "Sunflower refined oil",
+        brand: "Fortune",
+        category: "staples",
+        tags: [
+            "cooking oil",
+            "refined",
+            "frying"
+        ],
+        size: {
+            value: 5,
+            unit: "l"
+        },
+        price: 790,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.5,
+        atc: 0.44
+    },
+    {
+        id: "p4b",
+        title: "Extra virgin olive oil",
+        brand: "Figaro",
+        category: "staples",
+        tags: [
+            "cooking oil",
+            "salad",
+            "mediterranean"
+        ],
+        size: {
+            value: 1,
+            unit: "l"
+        },
+        price: 950,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.22,
+        atc: 0.16
+    },
+    {
+        id: "p4c",
+        title: "Besan, gram flour",
+        brand: "Rajdhani",
+        category: "staples",
+        tags: [
+            "flour",
+            "chickpea",
+            "pakora"
+        ],
+        size: {
+            value: 1,
+            unit: "kg"
+        },
+        price: 95,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.3,
+        atc: 0.26
+    },
+    {
+        id: "p4d",
+        title: "Sooji, rava",
+        brand: "Rajdhani",
+        category: "staples",
+        tags: [
+            "semolina",
+            "upma",
+            "flour"
+        ],
+        size: {
+            value: 1,
+            unit: "kg"
+        },
+        price: 70,
+        diet: [
+            "vegetarian"
+        ],
+        ctr: 0.27,
+        atc: 0.23
+    },
+    {
+        id: "p4e",
+        title: "Refined sugar",
+        brand: "Madhur",
+        category: "staples",
+        tags: [
+            "cheeni",
+            "sweetener"
+        ],
+        size: {
+            value: 5,
+            unit: "kg"
+        },
+        price: 290,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.54,
+        atc: 0.48
+    },
+    {
+        id: "p4f",
+        title: "Iodised salt",
+        brand: "Tata",
+        category: "staples",
+        tags: [
+            "namak",
+            "seasoning"
+        ],
+        size: {
+            value: 1,
+            unit: "kg"
+        },
+        price: 28,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.7,
+        atc: 0.64
+    },
+    {
+        id: "p4g",
+        title: "Poha, thick",
+        brand: "Rajdhani",
+        category: "staples",
+        tags: [
+            "flattened rice",
+            "breakfast",
+            "chawal"
+        ],
+        size: {
+            value: 1,
+            unit: "kg"
+        },
+        price: 75,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.26,
+        atc: 0.22
+    },
+    {
+        id: "p4h",
+        title: "Organic brown rice",
+        brand: "24 Mantra",
+        category: "staples",
+        tags: [
+            "chawal",
+            "grain",
+            "whole grain"
+        ],
+        size: {
+            value: 1,
+            unit: "kg"
+        },
+        price: 185,
+        diet: [
+            "vegan",
+            "gluten-free",
+            "organic"
+        ],
+        ctr: 0.19,
+        atc: 0.15
+    },
+    {
+        id: "p4i",
+        title: "Vermicelli, roasted",
+        brand: "Bambino",
+        category: "staples",
+        tags: [
+            "seviyan",
+            "noodles",
+            "kheer"
+        ],
+        size: {
+            value: 900,
+            unit: "g"
+        },
+        price: 110,
+        diet: [
+            "vegetarian"
+        ],
+        ctr: 0.18,
+        atc: 0.15
+    },
+    // ---- spices --------------------------------------------------------------
+    {
+        id: "pa0",
+        title: "Turmeric powder",
+        brand: "Everest",
+        category: "spices",
+        tags: [
+            "haldi",
+            "masala",
+            "seasoning"
+        ],
+        size: {
+            value: 200,
+            unit: "g"
+        },
+        price: 75,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.47,
+        atc: 0.41
+    },
+    {
+        id: "pa1",
+        title: "Red chilli powder",
+        brand: "Everest",
+        category: "spices",
+        tags: [
+            "lal mirch",
+            "masala",
+            "spicy"
+        ],
+        size: {
+            value: 200,
+            unit: "g"
+        },
+        price: 95,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.46,
+        atc: 0.4
+    },
+    {
+        id: "pa2",
+        title: "Coriander powder",
+        brand: "Everest",
+        category: "spices",
+        tags: [
+            "dhania",
+            "masala",
+            "seasoning"
+        ],
+        size: {
+            value: 200,
+            unit: "g"
+        },
+        price: 70,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.38,
+        atc: 0.33
+    },
+    {
+        id: "pa3",
+        title: "Garam masala",
+        brand: "MDH",
+        category: "spices",
+        tags: [
+            "masala",
+            "blend",
+            "seasoning"
+        ],
+        size: {
+            value: 100,
+            unit: "g"
+        },
+        price: 85,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.44,
+        atc: 0.38
+    },
+    {
+        id: "pa4",
+        title: "Cumin seeds",
+        brand: "Tata Sampann",
+        category: "spices",
+        tags: [
+            "jeera",
+            "whole spice",
+            "tadka"
+        ],
+        size: {
+            value: 200,
+            unit: "g"
+        },
+        price: 120,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.4,
+        atc: 0.35
+    },
+    {
+        id: "pa5",
+        title: "Organic black pepper",
+        brand: "24 Mantra",
+        category: "spices",
+        tags: [
+            "kali mirch",
+            "whole spice",
+            "seasoning"
+        ],
+        size: {
+            value: 100,
+            unit: "g"
+        },
+        price: 180,
+        diet: [
+            "vegan",
+            "gluten-free",
+            "organic"
+        ],
+        ctr: 0.21,
+        atc: 0.16
+    },
+    {
+        id: "pa6",
+        title: "Mustard seeds",
+        brand: "Catch",
+        category: "spices",
+        tags: [
+            "rai",
+            "whole spice",
+            "tadka"
+        ],
+        size: {
+            value: 100,
+            unit: "g"
+        },
+        price: 40,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.26,
+        atc: 0.22
+    },
+    {
+        id: "pa7",
+        title: "Chai masala",
+        brand: "Everest",
+        category: "spices",
+        tags: [
+            "tea masala",
+            "blend",
+            "aromatic"
+        ],
+        size: {
+            value: 50,
+            unit: "g"
+        },
+        price: 55,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.19,
+        atc: 0.15
+    },
+    // ---- condiments ----------------------------------------------------------
+    {
+        id: "pb0",
+        title: "Tomato ketchup",
+        brand: "Kissan",
+        category: "condiments",
+        tags: [
+            "sauce",
+            "tamatar",
+            "dip"
+        ],
+        size: {
+            value: 1,
+            unit: "kg"
+        },
+        price: 150,
+        diet: [
+            "vegetarian",
+            "gluten-free"
+        ],
+        ctr: 0.52,
+        atc: 0.45
+    },
+    {
+        id: "pb1",
+        title: "Veg mayonnaise",
+        brand: "Veeba",
+        category: "condiments",
+        tags: [
+            "sauce",
+            "dip",
+            "spread"
+        ],
+        size: {
+            value: 875,
+            unit: "g"
+        },
+        price: 210,
+        diet: [
+            "vegetarian"
+        ],
+        ctr: 0.39,
+        atc: 0.33
+    },
+    {
+        id: "pb2",
+        title: "Soy sauce",
+        brand: "Ching's",
+        category: "condiments",
+        tags: [
+            "sauce",
+            "chinese",
+            "umami"
+        ],
+        size: {
+            value: 200,
+            unit: "ml"
+        },
+        price: 75,
+        diet: [
+            "vegan"
+        ],
+        ctr: 0.28,
+        atc: 0.23
+    },
+    {
+        id: "pb3",
+        title: "Mango pickle",
+        brand: "Mother's Recipe",
+        category: "condiments",
+        tags: [
+            "achar",
+            "aam",
+            "spicy"
+        ],
+        size: {
+            value: 400,
+            unit: "g"
+        },
+        price: 130,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.34,
+        atc: 0.29
+    },
+    {
+        id: "pb4",
+        title: "Mint coriander chutney",
+        brand: "Veeba",
+        category: "condiments",
+        tags: [
+            "dip",
+            "hari chutney",
+            "sauce"
+        ],
+        size: {
+            value: 250,
+            unit: "g"
+        },
+        price: 95,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.2,
+        atc: 0.16
+    },
+    {
+        id: "pb5",
+        title: "Apple cider vinegar",
+        brand: "Dabur",
+        category: "condiments",
+        tags: [
+            "vinegar",
+            "sirka",
+            "health"
+        ],
+        size: {
+            value: 500,
+            unit: "ml"
+        },
+        price: 190,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.23,
+        atc: 0.17
+    },
+    {
+        id: "pb6",
+        title: "Peri-peri seasoning",
+        brand: "Veeba",
+        category: "condiments",
+        tags: [
+            "sauce",
+            "spicy",
+            "dip"
+        ],
+        size: {
+            value: 300,
+            unit: "g"
+        },
+        price: 120,
+        diet: [
+            "vegetarian"
+        ],
+        ctr: 0.17,
+        atc: 0.13
+    },
+    // ---- frozen --------------------------------------------------------------
+    {
+        id: "pc0",
+        title: "Frozen green peas",
+        brand: "Safal",
+        category: "frozen",
+        tags: [
+            "matar",
+            "vegetable",
+            "freezer"
+        ],
+        size: {
+            value: 500,
+            unit: "g"
+        },
+        price: 95,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.48,
+        atc: 0.42
+    },
+    {
+        id: "pc1",
+        title: "Frozen french fries",
+        brand: "McCain",
+        category: "frozen",
+        tags: [
+            "aloo",
+            "potato",
+            "freezer",
+            "snack"
+        ],
+        size: {
+            value: 750,
+            unit: "g"
+        },
+        price: 185,
+        diet: [
+            "vegan"
+        ],
+        ctr: 0.44,
+        atc: 0.37
+    },
+    {
+        id: "pc2",
+        title: "Frozen malabar paratha",
+        brand: "ID",
+        category: "frozen",
+        tags: [
+            "paratha",
+            "flatbread",
+            "freezer"
+        ],
+        size: {
+            value: 5,
+            unit: "pack"
+        },
+        price: 140,
+        diet: [
+            "vegetarian"
+        ],
+        ctr: 0.36,
+        atc: 0.31
+    },
+    {
+        id: "pc3",
+        title: "Vanilla ice cream tub",
+        brand: "Amul",
+        category: "frozen",
+        tags: [
+            "dessert",
+            "freezer",
+            "sweet"
+        ],
+        size: {
+            value: 1,
+            unit: "l"
+        },
+        price: 280,
+        diet: [
+            "vegetarian"
+        ],
+        ctr: 0.42,
+        atc: 0.35
+    },
+    {
+        id: "pc4",
+        title: "Frozen sweet corn",
+        brand: "Safal",
+        category: "frozen",
+        tags: [
+            "makai",
+            "vegetable",
+            "freezer"
+        ],
+        size: {
+            value: 500,
+            unit: "g"
+        },
+        price: 110,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.25,
+        atc: 0.2
+    },
     // ---- beverages -----------------------------------------------------------
     {
         id: "p50",
@@ -1670,6 +3857,163 @@ const catalogue = [
         ctr: 0.4,
         atc: 0.32
     },
+    {
+        id: "p54",
+        title: "Masala chai tea bags",
+        brand: "Tata Tea",
+        category: "beverages",
+        tags: [
+            "chai",
+            "tea bags",
+            "spiced"
+        ],
+        size: {
+            value: 50,
+            unit: "pack"
+        },
+        price: 180,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.38,
+        atc: 0.32
+    },
+    {
+        id: "p55",
+        title: "Instant coffee powder",
+        brand: "Nescafé",
+        category: "beverages",
+        tags: [
+            "coffee",
+            "caffeine",
+            "classic"
+        ],
+        size: {
+            value: 200,
+            unit: "g"
+        },
+        price: 610,
+        diet: [
+            "vegetarian",
+            "gluten-free"
+        ],
+        ctr: 0.47,
+        atc: 0.4
+    },
+    {
+        id: "p56",
+        title: "Green tea bags",
+        brand: "Lipton",
+        category: "beverages",
+        tags: [
+            "tea",
+            "antioxidant",
+            "light"
+        ],
+        size: {
+            value: 100,
+            unit: "pack"
+        },
+        price: 350,
+        diet: [
+            "vegan",
+            "gluten-free"
+        ],
+        ctr: 0.3,
+        atc: 0.24
+    },
+    {
+        id: "p57",
+        title: "Packaged drinking water",
+        brand: "Bisleri",
+        category: "beverages",
+        tags: [
+            "water",
+            "mineral",
+            "bottle"
+        ],
+        size: {
+            value: 20,
+            unit: "l"
+        },
+        price: 90,
+        diet: [
+            "vegan",
+            "sugar-free",
+            "gluten-free"
+        ],
+        ctr: 0.6,
+        atc: 0.55
+    },
+    {
+        id: "p58",
+        title: "Cola, no sugar",
+        brand: "Coca-Cola",
+        category: "beverages",
+        tags: [
+            "soft drink",
+            "fizzy",
+            "diet",
+            "soda"
+        ],
+        size: {
+            value: 750,
+            unit: "ml"
+        },
+        price: 45,
+        diet: [
+            "vegan",
+            "sugar-free"
+        ],
+        ctr: 0.5,
+        atc: 0.44
+    },
+    {
+        id: "p59",
+        title: "Tender coconut water",
+        brand: "Cocofly",
+        category: "beverages",
+        tags: [
+            "nariyal pani",
+            "natural",
+            "hydration"
+        ],
+        size: {
+            value: 200,
+            unit: "ml"
+        },
+        price: 50,
+        diet: [
+            "vegan",
+            "gluten-free",
+            "sugar-free"
+        ],
+        ctr: 0.26,
+        atc: 0.21
+    },
+    {
+        id: "p5a",
+        title: "Rose milkshake",
+        brand: "Amul",
+        category: "beverages",
+        tags: [
+            "milk drink",
+            "flavoured",
+            "sweet"
+        ],
+        size: {
+            value: 180,
+            unit: "ml"
+        },
+        price: 30,
+        diet: [
+            "vegetarian",
+            "gluten-free"
+        ],
+        ctr: 0.22,
+        atc: 0.18
+    },
     // ---- household -----------------------------------------------------------
     {
         id: "p60",
@@ -1679,7 +4023,8 @@ const catalogue = [
         tags: [
             "cleaning",
             "utensil",
-            "detergent"
+            "detergent",
+            "bartan"
         ],
         size: {
             value: 750,
@@ -1697,7 +4042,8 @@ const catalogue = [
         category: "household",
         tags: [
             "washing",
-            "clothes"
+            "clothes",
+            "kapda"
         ],
         size: {
             value: 2,
@@ -1726,6 +4072,631 @@ const catalogue = [
         diet: [],
         ctr: 0.3,
         atc: 0.24
+    },
+    {
+        id: "p63",
+        title: "Dishwash bar",
+        brand: "Vim",
+        category: "household",
+        tags: [
+            "cleaning",
+            "utensil",
+            "bartan",
+            "soap"
+        ],
+        size: {
+            value: 4,
+            unit: "pack"
+        },
+        price: 60,
+        diet: [],
+        ctr: 0.45,
+        atc: 0.4
+    },
+    {
+        id: "p64",
+        title: "Liquid laundry detergent",
+        brand: "Ariel",
+        category: "household",
+        tags: [
+            "washing",
+            "clothes",
+            "front load"
+        ],
+        size: {
+            value: 2,
+            unit: "l"
+        },
+        price: 590,
+        diet: [],
+        ctr: 0.35,
+        atc: 0.29
+    },
+    {
+        id: "p65",
+        title: "Floor cleaner, citrus",
+        brand: "Lizol",
+        category: "household",
+        tags: [
+            "cleaning",
+            "disinfectant",
+            "phenyl",
+            "pocha"
+        ],
+        size: {
+            value: 2,
+            unit: "l"
+        },
+        price: 380,
+        diet: [],
+        ctr: 0.5,
+        atc: 0.43
+    },
+    {
+        id: "p66",
+        title: "Toilet cleaner",
+        brand: "Harpic",
+        category: "household",
+        tags: [
+            "cleaning",
+            "bathroom",
+            "disinfectant"
+        ],
+        size: {
+            value: 1,
+            unit: "l"
+        },
+        price: 195,
+        diet: [],
+        ctr: 0.52,
+        atc: 0.46
+    },
+    {
+        id: "p67",
+        title: "Glass cleaner spray",
+        brand: "Colin",
+        category: "household",
+        tags: [
+            "cleaning",
+            "window",
+            "spray"
+        ],
+        size: {
+            value: 500,
+            unit: "ml"
+        },
+        price: 110,
+        diet: [],
+        ctr: 0.33,
+        atc: 0.28
+    },
+    {
+        id: "p68",
+        title: "Garbage bags, medium",
+        brand: "Ezee",
+        category: "household",
+        tags: [
+            "bin bags",
+            "dustbin",
+            "kachra"
+        ],
+        size: {
+            value: 30,
+            unit: "pack"
+        },
+        price: 140,
+        diet: [],
+        ctr: 0.41,
+        atc: 0.36
+    },
+    {
+        id: "p69",
+        title: "Aluminium foil roll",
+        brand: "Freshwrapp",
+        category: "household",
+        tags: [
+            "kitchen",
+            "wrap",
+            "foil"
+        ],
+        size: {
+            value: 72,
+            unit: "pack"
+        },
+        price: 160,
+        diet: [],
+        ctr: 0.29,
+        atc: 0.24
+    },
+    {
+        id: "p6a",
+        title: "Cling film wrap",
+        brand: "Freshwrapp",
+        category: "household",
+        tags: [
+            "kitchen",
+            "wrap",
+            "plastic"
+        ],
+        size: {
+            value: 30,
+            unit: "pack"
+        },
+        price: 120,
+        diet: [],
+        ctr: 0.2,
+        atc: 0.16
+    },
+    {
+        id: "p6b",
+        title: "Scrub pads, pack of 6",
+        brand: "Scotch-Brite",
+        category: "household",
+        tags: [
+            "cleaning",
+            "utensil",
+            "sponge"
+        ],
+        size: {
+            value: 6,
+            unit: "pack"
+        },
+        price: 90,
+        diet: [],
+        ctr: 0.38,
+        atc: 0.33
+    },
+    {
+        id: "p6c",
+        title: "Microfibre cleaning cloth",
+        brand: "Scotch-Brite",
+        category: "household",
+        tags: [
+            "cleaning",
+            "duster",
+            "wipe"
+        ],
+        size: {
+            value: 3,
+            unit: "pack"
+        },
+        price: 180,
+        diet: [],
+        ctr: 0.22,
+        atc: 0.18
+    },
+    {
+        id: "p6d",
+        title: "Spin mop with bucket",
+        brand: "Spotzero",
+        category: "household",
+        tags: [
+            "cleaning",
+            "pocha",
+            "floor"
+        ],
+        price: 1250,
+        diet: [],
+        ctr: 0.18,
+        atc: 0.12
+    },
+    {
+        id: "p6e",
+        title: "Mosquito repellent refill",
+        brand: "Good Knight",
+        category: "household",
+        tags: [
+            "pest",
+            "machhar",
+            "liquid"
+        ],
+        size: {
+            value: 45,
+            unit: "ml"
+        },
+        price: 85,
+        diet: [],
+        ctr: 0.44,
+        atc: 0.39
+    },
+    {
+        id: "p6f",
+        title: "Cockroach killer gel",
+        brand: "Hit",
+        category: "household",
+        tags: [
+            "pest",
+            "insect",
+            "spray"
+        ],
+        size: {
+            value: 20,
+            unit: "g"
+        },
+        price: 210,
+        diet: [],
+        ctr: 0.24,
+        atc: 0.2
+    },
+    {
+        id: "p6g",
+        title: "Air freshener, lavender",
+        brand: "Godrej Aer",
+        category: "household",
+        tags: [
+            "room spray",
+            "fragrance",
+            "home"
+        ],
+        size: {
+            value: 220,
+            unit: "ml"
+        },
+        price: 225,
+        diet: [],
+        ctr: 0.27,
+        atc: 0.22
+    },
+    {
+        id: "p6h",
+        title: "Naphthalene balls",
+        brand: "Maxo",
+        category: "household",
+        tags: [
+            "wardrobe",
+            "moth",
+            "freshener"
+        ],
+        size: {
+            value: 200,
+            unit: "g"
+        },
+        price: 70,
+        diet: [],
+        ctr: 0.14,
+        atc: 0.11
+    },
+    {
+        id: "p6i",
+        title: "Fabric conditioner, rose",
+        brand: "Comfort",
+        category: "household",
+        tags: [
+            "washing",
+            "clothes",
+            "softener"
+        ],
+        size: {
+            value: 860,
+            unit: "ml"
+        },
+        price: 245,
+        diet: [],
+        ctr: 0.26,
+        atc: 0.21
+    },
+    {
+        id: "p6j",
+        title: "Bathroom cleaning brush",
+        brand: "Gala",
+        category: "household",
+        tags: [
+            "cleaning",
+            "toilet",
+            "brush"
+        ],
+        price: 150,
+        diet: [],
+        ctr: 0.16,
+        atc: 0.13
+    },
+    {
+        id: "p6k",
+        title: "Matchbox, pack of 10",
+        brand: "Homelite",
+        category: "household",
+        tags: [
+            "kitchen",
+            "fire",
+            "essentials"
+        ],
+        size: {
+            value: 10,
+            unit: "pack"
+        },
+        price: 20,
+        diet: [],
+        ctr: 0.31,
+        atc: 0.28
+    },
+    {
+        id: "p6l",
+        title: "LED bulb, 9W cool white",
+        brand: "Philips",
+        category: "household",
+        tags: [
+            "lighting",
+            "bulb",
+            "electrical"
+        ],
+        size: {
+            value: 2,
+            unit: "pack"
+        },
+        price: 240,
+        diet: [],
+        ctr: 0.29,
+        atc: 0.24
+    },
+    // ---- personal care -------------------------------------------------------
+    {
+        id: "pd0",
+        title: "Bathing soap, sandal",
+        brand: "Mysore Sandal",
+        category: "personal care",
+        tags: [
+            "soap",
+            "bath",
+            "fragrance"
+        ],
+        size: {
+            value: 4,
+            unit: "pack"
+        },
+        price: 220,
+        diet: [],
+        ctr: 0.42,
+        atc: 0.36
+    },
+    {
+        id: "pd1",
+        title: "Anti-dandruff shampoo",
+        brand: "Head & Shoulders",
+        category: "personal care",
+        tags: [
+            "hair",
+            "shampoo",
+            "scalp"
+        ],
+        size: {
+            value: 650,
+            unit: "ml"
+        },
+        price: 560,
+        diet: [],
+        ctr: 0.37,
+        atc: 0.3
+    },
+    {
+        id: "pd2",
+        title: "Toothpaste, whitening",
+        brand: "Colgate",
+        category: "personal care",
+        tags: [
+            "dental",
+            "brush",
+            "oral"
+        ],
+        size: {
+            value: 200,
+            unit: "g"
+        },
+        price: 135,
+        diet: [],
+        ctr: 0.55,
+        atc: 0.48
+    },
+    {
+        id: "pd3",
+        title: "Handwash refill, aloe",
+        brand: "Dettol",
+        category: "personal care",
+        tags: [
+            "soap",
+            "hygiene",
+            "liquid"
+        ],
+        size: {
+            value: 1500,
+            unit: "ml"
+        },
+        price: 280,
+        diet: [],
+        ctr: 0.4,
+        atc: 0.35
+    },
+    {
+        id: "pd4",
+        title: "Hand sanitiser",
+        brand: "Dettol",
+        category: "personal care",
+        tags: [
+            "hygiene",
+            "alcohol",
+            "gel"
+        ],
+        size: {
+            value: 500,
+            unit: "ml"
+        },
+        price: 180,
+        diet: [],
+        ctr: 0.21,
+        atc: 0.17
+    },
+    {
+        id: "pd5",
+        title: "Deodorant spray",
+        brand: "Nivea",
+        category: "personal care",
+        tags: [
+            "body spray",
+            "fragrance",
+            "roll on"
+        ],
+        size: {
+            value: 150,
+            unit: "ml"
+        },
+        price: 260,
+        diet: [],
+        ctr: 0.28,
+        atc: 0.23
+    },
+    {
+        id: "pd6",
+        title: "Coconut hair oil",
+        brand: "Parachute",
+        category: "personal care",
+        tags: [
+            "hair",
+            "oil",
+            "nariyal"
+        ],
+        size: {
+            value: 600,
+            unit: "ml"
+        },
+        price: 290,
+        diet: [],
+        ctr: 0.39,
+        atc: 0.34
+    },
+    {
+        id: "pd7",
+        title: "Sanitary pads, XL",
+        brand: "Whisper",
+        category: "personal care",
+        tags: [
+            "feminine hygiene",
+            "napkin"
+        ],
+        size: {
+            value: 30,
+            unit: "pack"
+        },
+        price: 330,
+        diet: [],
+        ctr: 0.33,
+        atc: 0.29
+    },
+    {
+        id: "pd8",
+        title: "Toilet paper rolls",
+        brand: "Origami",
+        category: "personal care",
+        tags: [
+            "tissue",
+            "bathroom",
+            "roll"
+        ],
+        size: {
+            value: 6,
+            unit: "pack"
+        },
+        price: 240,
+        diet: [],
+        ctr: 0.3,
+        atc: 0.25
+    },
+    // ---- baby ----------------------------------------------------------------
+    {
+        id: "pe0",
+        title: "Baby diapers, pants M",
+        brand: "Pampers",
+        category: "baby",
+        tags: [
+            "nappy",
+            "infant",
+            "toddler"
+        ],
+        size: {
+            value: 62,
+            unit: "pack"
+        },
+        price: 950,
+        diet: [],
+        ctr: 0.36,
+        atc: 0.31
+    },
+    {
+        id: "pe1",
+        title: "Baby wipes, fragrance-free",
+        brand: "Himalaya",
+        category: "baby",
+        tags: [
+            "wipes",
+            "infant",
+            "gentle"
+        ],
+        size: {
+            value: 72,
+            unit: "pack"
+        },
+        price: 190,
+        diet: [],
+        ctr: 0.3,
+        atc: 0.26
+    },
+    {
+        id: "pe2",
+        title: "Baby cereal, rice",
+        brand: "Nestlé Cerelac",
+        category: "baby",
+        tags: [
+            "infant food",
+            "porridge",
+            "weaning"
+        ],
+        size: {
+            value: 300,
+            unit: "g"
+        },
+        price: 285,
+        diet: [
+            "vegetarian"
+        ],
+        ctr: 0.24,
+        atc: 0.2
+    },
+    // ---- pet -----------------------------------------------------------------
+    {
+        id: "pf0",
+        title: "Adult dog food, chicken",
+        brand: "Pedigree",
+        category: "pet",
+        tags: [
+            "dog",
+            "kibble",
+            "pet food"
+        ],
+        size: {
+            value: 3,
+            unit: "kg"
+        },
+        price: 780,
+        diet: [],
+        ctr: 0.27,
+        atc: 0.23
+    },
+    {
+        id: "pf1",
+        title: "Cat litter, clumping",
+        brand: "Drools",
+        category: "pet",
+        tags: [
+            "cat",
+            "litter",
+            "pet care"
+        ],
+        size: {
+            value: 5,
+            unit: "kg"
+        },
+        price: 650,
+        diet: [],
+        ctr: 0.17,
+        atc: 0.14
     },
     // ---- the easter egg ------------------------------------------------------
     // Indexed like everything else. It only surfaces when the query actually
@@ -1780,6 +4751,8 @@ if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelper
     ()=>allBrands,
     "normalise",
     ()=>normalise,
+    "recallOrder",
+    ()=>recallOrder,
     "search",
     ()=>search
 ]);
@@ -1972,6 +4945,12 @@ function search(q) {
     }
     hits.sort((a, b)=>b.score - a.score);
     return hits.slice(0, limit);
+}
+function recallOrder(hits) {
+    const lex = (h)=>h.signals.reduce((acc, x)=>x.key === "lexical" || x.key === "synonym" ? acc + x.value : acc, 0);
+    return [
+        ...hits
+    ].sort((a, b)=>lex(b) - lex(a)).map((h)=>h.product.id);
 }
 function normalise(hits) {
     if (!hits.length) return [];
@@ -2629,6 +5608,7 @@ __turbopack_context__.s([
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$search$2f$parse$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/search/parse.ts [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$search$2f$catalogue$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/search/catalogue.ts [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$search$2f$rank$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/search/rank.ts [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$hooks$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/hooks.ts [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$sections$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/sections.ts [app-client] (ecmascript)");
@@ -2640,17 +5620,72 @@ var _s = __turbopack_context__.k.signature();
 ;
 ;
 ;
-const ROW_H = 74;
-const ROW_H_SM = 92;
-const SIGNAL_H = 21;
-const CHAR_MS = 64;
-const SCENARIO_MS = 5600;
-/** Auto-typed while the visitor hasn't taken the panel over. */ const EXAMPLES = [
-    "dairy free milk 1l",
+;
+/* ------------------------------------------------------ stage clock --
+ * Durations of the three pipeline stages, then a beat on the settled state.
+ * Everything visual below is a pure function of (activeStage, prog), so
+ * retiming the run happens here and nowhere else.
+ */ /** Each stage names what it produces — the strip explains itself. */ const STAGES = [
+    {
+        name: "parse",
+        note: "words → entities"
+    },
+    {
+        name: "recall",
+        note: "BM25 candidates"
+    },
+    {
+        name: "rescore",
+        note: "signals decide"
+    }
+];
+const DURS = [
+    1400,
+    1900,
+    1700
+];
+const HOLD = 900;
+const TOTAL = DURS[0] + DURS[1] + DURS[2] + HOLD;
+/** Delay between the panel becoming visible and the query starting to type. */ const ARM_MS = 450;
+const CHAR_MS = 72;
+/** A keystroke re-runs the pipeline this long after typing stops. */ const DEBOUNCE_MS = 340;
+/** Beat on the finished result before the loop moves to the next query. */ const CYCLE_MS = 1800;
+const clamp01 = (v)=>Math.max(0, Math.min(1, v));
+const easeOutCubic = (v)=>1 - Math.pow(1 - v, 3);
+const easeInOutCubic = (v)=>v < 0.5 ? 4 * v * v * v : 1 - Math.pow(-2 * v + 2, 3) / 2;
+/** Which stage is running, and how far through it. */ function phaseOf(t) {
+    if (t === null) return {
+        active: -1,
+        prog: 0
+    };
+    let e = t;
+    for(let i = 0; i < 3; i++){
+        if (e < DURS[i]) return {
+            active: i,
+            prog: e / DURS[i]
+        };
+        e -= DURS[i];
+    }
+    return {
+        active: 3,
+        prog: 1
+    };
+}
+/**
+ * Auto-typed while the visitor hasn't taken the panel over.
+ *
+ * "gluten free bread" leads because it is the clearest demonstration: one
+ * exact match, then four rows visibly demoted for failing the constraint.
+ * With the catalogue grown past 160 products there are now five genuine
+ * dairy-free 1L milks, so that query returns a flat run of near-identical
+ * scores and no demoted row — a correct result, but a duller opening.
+ */ const EXAMPLES = [
     "gluten free bread",
+    "dairy free milk 1l",
     "cheap snacks under 100",
     "organic vegetables"
 ];
+/** The query the panel types to itself the first time it comes into view. */ const SAMPLE = EXAMPLES[0];
 /** Offered once the panel is handed over — the safety net for anyone who
     can't think of a query, and a quiet catalogue of what the parser knows. */ const SAMPLES = [
     "cheap snacks under 100",
@@ -2663,48 +5698,127 @@ function SearchConsole() {
     const mounted = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$hooks$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMounted"])();
     const panelRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     const inputRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
-    const [query, setQuery] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(EXAMPLES[0]);
+    const [query, setQuery] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
     /* `touched` stops the demo loop for good; `announce` fills the live region
      so the handover isn't a silent change for a screen reader. `queried`
      flips on the first real keystroke, which is when the chrome pill goes
      back to reporting hits and timing. */ const [touched, setTouched] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const [queried, setQueried] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const [announce, setAnnounce] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
-    const [onScreen, setOnScreen] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(true);
     const [openRow, setOpenRow] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
-    const [rowH, setRowH] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(ROW_H);
-    /* Row height follows the mobile breakpoint so the stacking maths stays in
-     step with the taller rows the stylesheet switches to. */ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
-        "SearchConsole.useEffect": ()=>{
-            const mq = window.matchMedia("(max-width: 767px)");
-            const sync = {
-                "SearchConsole.useEffect.sync": ()=>setRowH(mq.matches ? ROW_H_SM : ROW_H)
-            }["SearchConsole.useEffect.sync"];
-            sync();
-            mq.addEventListener("change", sync);
-            return ({
-                "SearchConsole.useEffect": ()=>mq.removeEventListener("change", sync)
-            })["SearchConsole.useEffect"];
-        }
-    }["SearchConsole.useEffect"], []);
-    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
+    /* Elapsed ms inside the current pipeline run; null between runs. */ const [t, setT] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
+    /* True once a full run has finished. Before that the panel stays quiet
+     while the query types itself; after it, typing updates results live. */ const [hasRun, setHasRun] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
+    /** Wall-clock marks. Refs, not state — the loop reads them every frame. */ const autoAt = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
+    const runAt = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
+    const runT0 = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
+    const cycleAt = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
+    const armed = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(false);
+    /** Which example the loop is on. */ const exampleIdx = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(0);
+    /* The loop reads this every frame and must not be re-created when it flips,
+     so it is a ref shadowing the state rather than an effect dependency. */ const touchedRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(false);
+    touchedRef.current = touched;
+    /* Arm on visibility, not on mount: the section sits well below the fold, so
+     a run started at mount would be over before anyone reached it. Once only —
+     the observer disconnects itself. */ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "SearchConsole.useEffect": ()=>{
             const el = panelRef.current;
-            if (!el) return;
+            if (!el || !ready || reduced) return;
             const io = new IntersectionObserver({
-                "SearchConsole.useEffect": (param)=>{
-                    let [e] = param;
-                    return setOnScreen(e.isIntersecting);
+                "SearchConsole.useEffect": (entries)=>{
+                    if (!entries.some({
+                        "SearchConsole.useEffect": (e)=>e.isIntersecting
+                    }["SearchConsole.useEffect"]) || armed.current) return;
+                    armed.current = true;
+                    autoAt.current = Date.now() + ARM_MS;
+                    io.disconnect();
                 }
             }["SearchConsole.useEffect"], {
-                threshold: 0.15
+                threshold: 0.4
             });
             io.observe(el);
             return ({
                 "SearchConsole.useEffect": ()=>io.disconnect()
             })["SearchConsole.useEffect"];
         }
-    }["SearchConsole.useEffect"], []);
+    }["SearchConsole.useEffect"], [
+        ready,
+        reduced
+    ]);
+    /* One rAF loop drives typing, the debounce and the stage clock, all from
+     wall-clock elapsed time. Not setInterval: browsers throttle and freeze
+     timers in inactive tabs, so a timer-driven run stalls half finished.
+     rAF pauses while hidden, and reading Date.now() each frame means the
+     elapsed value self-corrects the moment it resumes. */ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
+        "SearchConsole.useEffect": ()=>{
+            if (!ready) return;
+            if (reduced) {
+                // No staged run at all — show the finished state and leave it there.
+                setQuery(SAMPLE);
+                setT(TOTAL);
+                setHasRun(true);
+                return;
+            }
+            let raf = 0;
+            const loop = {
+                "SearchConsole.useEffect.loop": ()=>{
+                    raf = requestAnimationFrame(loop);
+                    const now = Date.now();
+                    const auto = !touchedRef.current;
+                    if (auto && autoAt.current !== null && now >= autoAt.current) {
+                        const text = EXAMPLES[exampleIdx.current];
+                        const chars = Math.min(text.length, Math.floor((now - autoAt.current) / CHAR_MS) + 1);
+                        setQuery(text.slice(0, chars));
+                        runAt.current = now + DEBOUNCE_MS;
+                        if (chars >= text.length) autoAt.current = null;
+                    }
+                    if (runAt.current !== null && now >= runAt.current) {
+                        runAt.current = null;
+                        runT0.current = now;
+                    }
+                    if (runT0.current !== null) {
+                        const e = now - runT0.current;
+                        if (e >= TOTAL) {
+                            runT0.current = null;
+                            setT(TOTAL);
+                            setHasRun(true);
+                            /* Keep going: hold the finished result for a beat, then move on to
+             the next query. The loop only stops when the visitor takes over. */ if (auto) cycleAt.current = now + CYCLE_MS;
+                        } else {
+                            setT(e);
+                        }
+                    }
+                    if (auto && cycleAt.current !== null && now >= cycleAt.current) {
+                        cycleAt.current = null;
+                        exampleIdx.current = (exampleIdx.current + 1) % EXAMPLES.length;
+                        setQuery("");
+                        setT(null);
+                        setOpenRow(null);
+                        autoAt.current = now + 320;
+                    }
+                }
+            }["SearchConsole.useEffect.loop"];
+            raf = requestAnimationFrame(loop);
+            return ({
+                "SearchConsole.useEffect": ()=>cancelAnimationFrame(raf)
+            })["SearchConsole.useEffect"];
+        }
+    }["SearchConsole.useEffect"], [
+        ready,
+        reduced
+    ]);
+    /** Queue a run on the debounce; Enter and the sample chips skip the wait. */ const queueRun = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"])({
+        "SearchConsole.useCallback[queueRun]": function() {
+            let immediate = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : false;
+            autoAt.current = null;
+            if (immediate) {
+                runAt.current = null;
+                runT0.current = Date.now();
+            } else {
+                runAt.current = Date.now() + DEBOUNCE_MS;
+            }
+        }
+    }["SearchConsole.useCallback[queueRun]"], []);
     /* ------------------------------------------------------- the engine --
    * Runs synchronously on every keystroke. The catalogue is ~40 documents,
    * so a full parse + BM25 recall + rescore is well under a millisecond —
@@ -2713,10 +5827,16 @@ function SearchConsole() {
         "SearchConsole.useMemo[computed]": ()=>{
             const t0 = performance.now();
             const p = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$search$2f$parse$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["detectBrand"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$search$2f$parse$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["parseQuery"])(query), __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$search$2f$rank$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["allBrands"]);
-            const h = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$search$2f$rank$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["normalise"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$search$2f$rank$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["search"])(p, 5));
+            /* Recall the whole candidate set, then keep the top five. The count is
+       what the header animates toward during the recall stage — "scanned N"
+       is a real number, not a decorative one. */ const all = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$search$2f$rank$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["search"])(p, Number.MAX_SAFE_INTEGER);
+            const h = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$search$2f$rank$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["normalise"])(all.slice(0, 5));
             return {
                 parsed: p,
                 hits: h,
+                candidates: all.length,
+                /* What BM25 alone returned, so the rescore stage has a real "before"
+         order to travel from. */ recall: (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$search$2f$rank$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["recallOrder"])(h),
                 ms: performance.now() - t0
             };
         }
@@ -2737,53 +5857,7 @@ function SearchConsole() {
         query
     ]);
     const holding = !query.trim() && touched && !queried && held !== null;
-    const { parsed, hits, ms } = holding ? held : computed;
-    /* ------------------------------------------------- idle demo typing -- */ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
-        "SearchConsole.useEffect": ()=>{
-            if (!ready || reduced || touched || !onScreen) return;
-            let idx = 0;
-            let timers = [];
-            let loop = 0;
-            let cancelled = false;
-            const clear = {
-                "SearchConsole.useEffect.clear": ()=>{
-                    timers.forEach(clearTimeout);
-                    timers = [];
-                }
-            }["SearchConsole.useEffect.clear"];
-            const run = {
-                "SearchConsole.useEffect.run": ()=>{
-                    if (cancelled) return;
-                    const text = EXAMPLES[idx];
-                    clear();
-                    setQuery("");
-                    setOpenRow(null);
-                    text.split("").forEach({
-                        "SearchConsole.useEffect.run": (_, i)=>{
-                            timers.push(window.setTimeout({
-                                "SearchConsole.useEffect.run": ()=>setQuery(text.slice(0, i + 1))
-                            }["SearchConsole.useEffect.run"], (i + 1) * CHAR_MS));
-                        }
-                    }["SearchConsole.useEffect.run"]);
-                    idx = (idx + 1) % EXAMPLES.length;
-                }
-            }["SearchConsole.useEffect.run"];
-            run();
-            loop = window.setInterval(run, SCENARIO_MS);
-            return ({
-                "SearchConsole.useEffect": ()=>{
-                    cancelled = true;
-                    clear();
-                    window.clearInterval(loop);
-                }
-            })["SearchConsole.useEffect"];
-        }
-    }["SearchConsole.useEffect"], [
-        ready,
-        reduced,
-        touched,
-        onScreen
-    ]);
+    const { parsed, hits, candidates, recall, ms } = holding ? held : computed;
     const takeOver = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"])({
         "SearchConsole.useCallback[takeOver]": ()=>setTouched(true)
     }["SearchConsole.useCallback[takeOver]"], []);
@@ -2795,6 +5869,10 @@ function SearchConsole() {
             setTouched(true);
             setQuery("");
             setOpenRow(null);
+            autoAt.current = null;
+            runAt.current = null;
+            runT0.current = null;
+            setT(null);
             setAnnounce("Demo stopped. Search field ready — type a query or pick a sample.");
             requestAnimationFrame({
                 "SearchConsole.useCallback[handOver]": ()=>{
@@ -2811,17 +5889,134 @@ function SearchConsole() {
             setQueried(true);
             setQuery(text);
             setOpenRow(null);
+            queueRun(true);
             (_inputRef_current = inputRef.current) === null || _inputRef_current === void 0 ? void 0 : _inputRef_current.focus();
         }
-    }["SearchConsole.useCallback[runSample]"], []);
-    /* Stacking offsets: each row sits below the ones above it, and the open row
-     is taller. Computing offsets rather than using normal flow keeps the
-     re-rank a pure transform, so rows glide instead of jumping. */ const heights = hits.map((h)=>h.product.id === openRow ? rowH + h.signals.length * SIGNAL_H + 16 : rowH);
-    const offsets = heights.reduce((acc, h, i)=>{
-        acc.push(i === 0 ? 0 : acc[i - 1] + heights[i - 1]);
-        return acc;
-    }, []);
-    const stackH = heights.reduce((a, b)=>a + b, 0);
+    }["SearchConsole.useCallback[runSample]"], [
+        queueRun
+    ]);
+    /* Row heights and the flex gap, measured after layout. Both stacking orders
+     are derived from these, so a wrapped title is accounted for exactly. */ const resultsRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
+    const [geom, setGeom] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])({
+        heights: [],
+        gap: 12
+    });
+    /* ------------------------------------------------ staged presentation --
+   * Rows live in normal flow. They used to be absolutely positioned at a
+   * fixed row height, which collides the moment a title wraps — and titles
+   * wrap at every narrow width. Reveal and reorder are therefore computed per
+   * frame rather than handed to a CSS transition: the style object is
+   * rewritten every frame, so a transition would restart each time and the
+   * value would stay pinned at its start.
+   */ const { active, prog } = phaseOf(t);
+    const n = hits.length;
+    const recallMs = n === 0 ? -1 : active === 1 ? prog * DURS[1] : active >= 2 ? DURS[1] * 4 : -1;
+    const stagger = n ? DURS[1] / n : 0;
+    const ageOf = (recallRank)=>recallMs - recallRank * stagger;
+    /* ------------------------------------------------------- the reorder --
+   * The DOM order never changes: rows are always rendered in their final,
+   * rescored order and a transform puts them where recall had them. Re-sorting
+   * the array instead would swap two rows between frames with no travel — the
+   * reorder is the whole point of the stage, so it has to be visible.
+   *
+   * Doing that needs real geometry, because rows are in normal flow and a
+   * wrapped title makes one taller than its neighbours. Heights are measured
+   * after layout and the two stacking orders are accumulated from them.
+   */ const ranked = hits.map((h, finalRank)=>{
+        const r = recall.indexOf(h.product.id);
+        return {
+            hit: h,
+            finalRank,
+            recallRank: r < 0 ? finalRank : r
+        };
+    });
+    const travel = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMemo"])({
+        "SearchConsole.useMemo[travel]": ()=>{
+            if (geom.heights.length !== ranked.length) return ranked.map({
+                "SearchConsole.useMemo[travel]": ()=>0
+            }["SearchConsole.useMemo[travel]"]);
+            const { heights, gap } = geom;
+            const top = {
+                "SearchConsole.useMemo[travel].top": (order)=>{
+                    const out = [];
+                    let y = 0;
+                    for (const finalRank of order){
+                        out[finalRank] = y;
+                        y += heights[finalRank] + gap;
+                    }
+                    return out;
+                }
+            }["SearchConsole.useMemo[travel].top"];
+            const finalTop = top(ranked.map({
+                "SearchConsole.useMemo[travel].finalTop": (r)=>r.finalRank
+            }["SearchConsole.useMemo[travel].finalTop"]));
+            const recallTop = top([
+                ...ranked
+            ].sort({
+                "SearchConsole.useMemo[travel].recallTop": (a, b)=>a.recallRank - b.recallRank
+            }["SearchConsole.useMemo[travel].recallTop"]).map({
+                "SearchConsole.useMemo[travel].recallTop": (r)=>r.finalRank
+            }["SearchConsole.useMemo[travel].recallTop"]));
+            return ranked.map({
+                "SearchConsole.useMemo[travel]": (r)=>recallTop[r.finalRank] - finalTop[r.finalRank]
+            }["SearchConsole.useMemo[travel]"]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        }
+    }["SearchConsole.useMemo[travel]"], [
+        geom,
+        hits
+    ]);
+    const reordering = active === 2;
+    /* Rows slide from their recall slot to their final one across the rescore,
+     so `settle` is how far along that journey they are. */ /* Rows only sit at their recall positions while parse and recall are on
+     screen. Idle (active === -1, between loop cycles) has to settle too: left
+     at 0 it holds the previous run's offsets over the next run's rows, and
+     because those offsets were measured against different row heights, two
+     rows land on the same line. */ const settle = reordering ? easeInOutCubic(prog) : active === 0 || active === 1 ? 0 : 1;
+    const dip = reordering ? 1 - 0.35 * Math.sin(Math.PI * clamp01((prog - 0.18) / 0.34)) : 1;
+    /* Entity chips are the parse stage's output, so they arrive with it rather
+     than the instant the engine returns — otherwise the answer is on screen
+     before the step that produces it has started. */ const chipCount = active < 0 ? hasRun ? parsed.entities.length : 0 : active === 0 ? Math.floor(prog * (parsed.entities.length + 0.4)) : parsed.entities.length;
+    /* Measure after layout, before paint: the travel offsets are needed on the
+     very next frame the stage clock reads them. */ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useLayoutEffect"])({
+        "SearchConsole.useLayoutEffect": ()=>{
+            const host = resultsRef.current;
+            if (!host) return;
+            const els = Array.from(host.querySelectorAll(".result"));
+            if (els.length === 0) {
+                setGeom({
+                    "SearchConsole.useLayoutEffect": (g)=>g.heights.length ? {
+                            heights: [],
+                            gap: g.gap
+                        } : g
+                }["SearchConsole.useLayoutEffect"]);
+                return;
+            }
+            const heights = els.map({
+                "SearchConsole.useLayoutEffect.heights": (el)=>el.getBoundingClientRect().height
+            }["SearchConsole.useLayoutEffect.heights"]);
+            /* Read the gap off the layout rather than hardcoding the stylesheet's
+       value, so the two can never drift apart. */ const gap = els.length > 1 ? els[1].getBoundingClientRect().top - els[0].getBoundingClientRect().bottom : 12;
+            setGeom({
+                "SearchConsole.useLayoutEffect": (g)=>g.heights.length === heights.length && g.heights.every({
+                        "SearchConsole.useLayoutEffect": (h, i)=>Math.abs(h - heights[i]) < 0.5
+                    }["SearchConsole.useLayoutEffect"]) && Math.abs(g.gap - gap) < 0.5 ? g : {
+                        heights,
+                        gap
+                    }
+            }["SearchConsole.useLayoutEffect"]);
+        }
+    }["SearchConsole.useLayoutEffect"], [
+        hits,
+        openRow
+    ]);
+    /* Says in words what the panel is doing right now. The rail shows where in
+     the pipeline we are; this says what that step means. */ const caption = active === 0 ? "finding entities" : active === 1 ? "recalling candidates" : active === 2 ? "re-ranking" : t === null ? "query understanding" : "final order";
+    /* Header meta. `ms` is the measured figure animated up to itself — the
+     number it lands on is the one the engine actually took. */ const runMs = DURS[0] + DURS[1] + DURS[2];
+    const overall = t === null ? 0 : clamp01(t / runMs);
+    const status = active >= 0 && active < 3 ? "live" : t === null ? "idle" : "settled";
+    const scanned = active === 1 ? Math.round(candidates * prog) : null;
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
         className: "searchband",
         id: "search",
@@ -2838,7 +6033,7 @@ function SearchConsole() {
                                 "aria-hidden": "true"
                             }, void 0, false, {
                                 fileName: "[project]/components/SearchConsole.tsx",
-                                lineNumber: 167,
+                                lineNumber: 401,
                                 columnNumber: 11
                             }, this),
                             (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$sections$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["num"])("search"),
@@ -2846,7 +6041,7 @@ function SearchConsole() {
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/SearchConsole.tsx",
-                        lineNumber: 166,
+                        lineNumber: 400,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -2860,14 +6055,14 @@ function SearchConsole() {
                                 children: "why"
                             }, void 0, false, {
                                 fileName: "[project]/components/SearchConsole.tsx",
-                                lineNumber: 172,
+                                lineNumber: 406,
                                 columnNumber: 11
                             }, this),
                             " the third result outranked the first."
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/SearchConsole.tsx",
-                        lineNumber: 170,
+                        lineNumber: 404,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2876,13 +6071,13 @@ function SearchConsole() {
                         children: "Search sits where language meets systems, and that’s exactly where I like to live. Query understanding, ranking models, ingestion pipelines that never sleep — the result is platforms serving 25K+ requests a minute across a 10-million-product catalog that still feel personal."
                     }, void 0, false, {
                         fileName: "[project]/components/SearchConsole.tsx",
-                        lineNumber: 174,
+                        lineNumber: 408,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/SearchConsole.tsx",
-                lineNumber: 165,
+                lineNumber: 399,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2894,7 +6089,7 @@ function SearchConsole() {
                         children: "Search something. Watch it think."
                     }, void 0, false, {
                         fileName: "[project]/components/SearchConsole.tsx",
-                        lineNumber: 185,
+                        lineNumber: 419,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2907,14 +6102,14 @@ function SearchConsole() {
                                 children: "re-ranks"
                             }, void 0, false, {
                                 fileName: "[project]/components/SearchConsole.tsx",
-                                lineNumber: 190,
+                                lineNumber: 424,
                                 columnNumber: 16
                             }, this),
                             " them — every row tells you why it landed where it did."
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/SearchConsole.tsx",
-                        lineNumber: 188,
+                        lineNumber: 422,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2925,339 +6120,472 @@ function SearchConsole() {
                                 className: "panel__chrome",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                        children: "parse → recall → rescore"
+                                        className: "panel__title".concat(active >= 0 && active < 3 ? " is-live" : ""),
+                                        children: caption
                                     }, void 0, false, {
                                         fileName: "[project]/components/SearchConsole.tsx",
-                                        lineNumber: 196,
+                                        lineNumber: 430,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                        className: "panel__status",
+                                        className: "panel__status is-".concat(status),
                                         children: touched && !queried ? "your turn" : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
                                             children: [
-                                                "live · ",
-                                                hits.length,
-                                                " hit",
-                                                hits.length === 1 ? "" : "s",
-                                                mounted ? " · ".concat(ms.toFixed(2), " ms") : ""
+                                                status,
+                                                active === 0 || active < 0 && !hasRun ? "" : scanned !== null ? " · ".concat(scanned.toLocaleString("en-IN"), " scanned") : " · ".concat(hits.length, " hit").concat(hits.length === 1 ? "" : "s"),
+                                                mounted ? " · ".concat((ms * overall).toFixed(2), " ms") : ""
                                             ]
                                         }, void 0, true)
                                     }, void 0, false, {
                                         fileName: "[project]/components/SearchConsole.tsx",
-                                        lineNumber: 200,
+                                        lineNumber: 433,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/SearchConsole.tsx",
-                                lineNumber: 195,
+                                lineNumber: 429,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "panel__query".concat(touched ? " is-live" : ""),
+                                className: "panel__body".concat(active >= 0 && active < 3 ? " is-running" : ""),
+                                "data-stage": active,
                                 children: [
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                        className: "panel__glyph",
-                                        "aria-hidden": "true",
-                                        children: "⌕"
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("ol", {
+                                        className: "rail",
+                                        "aria-label": "Pipeline stages",
+                                        children: STAGES.map((param, i)=>{
+                                            let { name, note } = param;
+                                            const state = active > i ? "done" : active === i ? "live" : "idle";
+                                            const fill = state === "done" ? 1 : state === "live" ? prog : 0;
+                                            return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
+                                                className: "rail__step is-".concat(state),
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        className: "rail__marker",
+                                                        "aria-hidden": "true",
+                                                        children: [
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                className: "rail__dot"
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/components/SearchConsole.tsx",
+                                                                lineNumber: 472,
+                                                                columnNumber: 23
+                                                            }, this),
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                className: "rail__line",
+                                                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                    className: "rail__fill",
+                                                                    style: {
+                                                                        transform: "scaleY(".concat(fill.toFixed(3), ")")
+                                                                    }
+                                                                }, void 0, false, {
+                                                                    fileName: "[project]/components/SearchConsole.tsx",
+                                                                    lineNumber: 478,
+                                                                    columnNumber: 25
+                                                                }, this)
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/components/SearchConsole.tsx",
+                                                                lineNumber: 477,
+                                                                columnNumber: 23
+                                                            }, this)
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/components/SearchConsole.tsx",
+                                                        lineNumber: 471,
+                                                        columnNumber: 21
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        className: "rail__text",
+                                                        children: [
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                className: "rail__name",
+                                                                children: name
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/components/SearchConsole.tsx",
+                                                                lineNumber: 485,
+                                                                columnNumber: 23
+                                                            }, this),
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                className: "rail__note",
+                                                                children: note
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/components/SearchConsole.tsx",
+                                                                lineNumber: 486,
+                                                                columnNumber: 23
+                                                            }, this)
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/components/SearchConsole.tsx",
+                                                        lineNumber: 484,
+                                                        columnNumber: 21
+                                                    }, this)
+                                                ]
+                                            }, name, true, {
+                                                fileName: "[project]/components/SearchConsole.tsx",
+                                                lineNumber: 470,
+                                                columnNumber: 19
+                                            }, this);
+                                        })
                                     }, void 0, false, {
                                         fileName: "[project]/components/SearchConsole.tsx",
-                                        lineNumber: 217,
+                                        lineNumber: 465,
                                         columnNumber: 13
                                     }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                        ref: inputRef,
-                                        className: "panel__input",
-                                        value: query,
-                                        onChange: (e)=>{
-                                            takeOver();
-                                            setQueried(true);
-                                            setQuery(e.target.value);
-                                            setOpenRow(null);
-                                        },
-                                        onFocus: takeOver,
-                                        onKeyDown: takeOver,
-                                        placeholder: "try dairy free milk 1l…",
-                                        "aria-label": "Search the demo catalogue",
-                                        spellCheck: false,
-                                        autoComplete: "off"
-                                    }, void 0, false, {
-                                        fileName: "[project]/components/SearchConsole.tsx",
-                                        lineNumber: 220,
-                                        columnNumber: 13
-                                    }, this),
-                                    query && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                        type: "button",
-                                        className: "panel__clear",
-                                        onClick: ()=>{
-                                            var _inputRef_current;
-                                            takeOver();
-                                            setQuery("");
-                                            (_inputRef_current = inputRef.current) === null || _inputRef_current === void 0 ? void 0 : _inputRef_current.focus();
-                                        },
-                                        children: "Clear"
-                                    }, void 0, false, {
-                                        fileName: "[project]/components/SearchConsole.tsx",
-                                        lineNumber: 238,
-                                        columnNumber: 15
-                                    }, this)
-                                ]
-                            }, void 0, true, {
-                                fileName: "[project]/components/SearchConsole.tsx",
-                                lineNumber: 216,
-                                columnNumber: 11
-                            }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "panel__chips",
-                                children: parsed.entities.length === 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                    className: "panel__nochips",
-                                    children: query.trim() ? "no entities recognised — falling back to plain text" : " "
-                                }, void 0, false, {
-                                    fileName: "[project]/components/SearchConsole.tsx",
-                                    lineNumber: 254,
-                                    columnNumber: 15
-                                }, this) : parsed.entities.map((e, i)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                        className: "chip",
-                                        style: {
-                                            animationDelay: "".concat(i * 70, "ms")
-                                        },
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "panel__main",
                                         children: [
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                className: "chip__type",
-                                                children: e.type
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "panel__query".concat(touched ? " is-live" : ""),
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        className: "panel__glyph",
+                                                        "aria-hidden": "true",
+                                                        children: "⌕"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/components/SearchConsole.tsx",
+                                                        lineNumber: 495,
+                                                        columnNumber: 17
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                                        ref: inputRef,
+                                                        className: "panel__input",
+                                                        value: query,
+                                                        onChange: (e)=>{
+                                                            takeOver();
+                                                            setQueried(true);
+                                                            setQuery(e.target.value);
+                                                            setOpenRow(null);
+                                                            queueRun();
+                                                        },
+                                                        onFocus: takeOver,
+                                                        onKeyDown: (e)=>{
+                                                            takeOver();
+                                                            // Enter skips the debounce — waiting 340ms after a deliberate
+                                                            // "go" reads as lag rather than as settling.
+                                                            if (e.key === "Enter") queueRun(true);
+                                                        },
+                                                        placeholder: "try dairy free milk 1l…",
+                                                        "aria-label": "Search the demo catalogue",
+                                                        spellCheck: false,
+                                                        autoComplete: "off"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/components/SearchConsole.tsx",
+                                                        lineNumber: 498,
+                                                        columnNumber: 17
+                                                    }, this),
+                                                    query && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                        type: "button",
+                                                        className: "panel__clear",
+                                                        onClick: ()=>{
+                                                            /* Clear is a reset, not a stop: it hands the panel back
+                         to the demo loop from the first example. Focus stays
+                         off the field — focusing it invites a keystroke, and
+                         the first keystroke would immediately stop the loop
+                         the visitor just asked to see again. */ setOpenRow(null);
+                                                            setTouched(false);
+                                                            setQueried(false);
+                                                            touchedRef.current = false;
+                                                            exampleIdx.current = 0;
+                                                            runAt.current = null;
+                                                            runT0.current = null;
+                                                            cycleAt.current = null;
+                                                            if (reduced) {
+                                                                /* No rAF loop is running to pick the demo back up, so
+                           restore the settled state directly rather than
+                           leaving an empty field nothing will ever fill. */ setQuery(SAMPLE);
+                                                                setT(TOTAL);
+                                                                setHasRun(true);
+                                                                autoAt.current = null;
+                                                                return;
+                                                            }
+                                                            setQuery("");
+                                                            setT(null);
+                                                            setHasRun(false);
+                                                            autoAt.current = Date.now() + ARM_MS;
+                                                        },
+                                                        children: "Clear"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/components/SearchConsole.tsx",
+                                                        lineNumber: 522,
+                                                        columnNumber: 19
+                                                    }, this)
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/components/SearchConsole.tsx",
+                                                lineNumber: 494,
+                                                columnNumber: 15
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "panel__chips",
+                                                children: parsed.entities.length === 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                    className: "panel__nochips",
+                                                    children: query.trim() ? "no entities recognised — falling back to plain text" : " "
+                                                }, void 0, false, {
+                                                    fileName: "[project]/components/SearchConsole.tsx",
+                                                    lineNumber: 562,
+                                                    columnNumber: 19
+                                                }, this) : parsed.entities.slice(0, chipCount).map((e, i)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        className: "chip",
+                                                        style: {
+                                                            animationDelay: "".concat(i * 70, "ms")
+                                                        },
+                                                        children: [
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                className: "chip__type",
+                                                                children: e.type
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/components/SearchConsole.tsx",
+                                                                lineNumber: 572,
+                                                                columnNumber: 23
+                                                            }, this),
+                                                            e.label
+                                                        ]
+                                                    }, "".concat(e.type, "-").concat(e.label), true, {
+                                                        fileName: "[project]/components/SearchConsole.tsx",
+                                                        lineNumber: 567,
+                                                        columnNumber: 21
+                                                    }, this))
                                             }, void 0, false, {
                                                 fileName: "[project]/components/SearchConsole.tsx",
-                                                lineNumber: 264,
-                                                columnNumber: 19
+                                                lineNumber: 560,
+                                                columnNumber: 15
                                             }, this),
-                                            e.label
-                                        ]
-                                    }, "".concat(e.type, "-").concat(e.label), true, {
-                                        fileName: "[project]/components/SearchConsole.tsx",
-                                        lineNumber: 259,
-                                        columnNumber: 17
-                                    }, this))
-                            }, void 0, false, {
-                                fileName: "[project]/components/SearchConsole.tsx",
-                                lineNumber: 252,
-                                columnNumber: 11
-                            }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "panel__results",
-                                style: {
-                                    height: Math.max(stackH, rowH)
-                                },
-                                children: [
-                                    hits.length === 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                        className: "panel__empty",
-                                        children: query.trim() ? "Nothing in the catalogue matches. It returns nothing rather than guessing." : "Start typing to search 40 products."
-                                    }, void 0, false, {
-                                        fileName: "[project]/components/SearchConsole.tsx",
-                                        lineNumber: 273,
-                                        columnNumber: 15
-                                    }, this),
-                                    hits.map((h, rank)=>{
-                                        const isOpen = h.product.id === openRow;
-                                        const max = Math.max(...h.signals.map((s)=>Math.abs(s.value)), 1);
-                                        var _h_filteredOut;
-                                        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "result".concat(isOpen ? " is-open" : "").concat(h.filteredOut ? " is-demoted" : ""),
-                                            style: {
-                                                transform: "translateY(".concat(offsets[rank], "px)")
-                                            },
-                                            children: [
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                                    type: "button",
-                                                    className: "result__head",
-                                                    onClick: ()=>setOpenRow(isOpen ? null : h.product.id),
-                                                    "aria-expanded": isOpen,
-                                                    children: [
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                            className: "result__rank",
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "panel__results",
+                                                ref: resultsRef,
+                                                children: [
+                                                    hits.length === 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                        className: "panel__empty",
+                                                        children: query.trim() ? "Nothing in the catalogue matches. It returns nothing rather than guessing." : "Start typing to search ".concat(__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$search$2f$catalogue$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["catalogue"].length - 1, " products.")
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/components/SearchConsole.tsx",
+                                                        lineNumber: 584,
+                                                        columnNumber: 19
+                                                    }, this),
+                                                    ranked.map((param)=>{
+                                                        let { hit: h, finalRank, recallRank } = param;
+                                                        const isOpen = h.product.id === openRow;
+                                                        const max = Math.max(...h.signals.map((sig)=>Math.abs(sig.value)), 1);
+                                                        const e = easeOutCubic(clamp01(ageOf(recallRank) / 260));
+                                                        /* Where recall put it, closing on where the rescore wants it. */ const dy = travel[finalRank] * (1 - settle);
+                                                        /* Rank counts off the order currently on screen, so the
+                     numbers flip mid-travel — which is what makes it read as a
+                     re-rank rather than a crossfade. */ const shown = settle > 0.5 ? finalRank : recallRank;
+                                                        var _h_filteredOut;
+                                                        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "result".concat(isOpen ? " is-open" : "").concat(h.filteredOut ? " is-demoted" : ""),
+                                                            /* Emitted directly, never transitioned — see the note above
+                     the row maths. */ style: {
+                                                                opacity: (0.25 + 0.75 * e) * dip,
+                                                                transform: "translate3d(".concat((10 * (1 - e)).toFixed(1), "px, ").concat(dy.toFixed(1), "px, 0)"),
+                                                                zIndex: Math.abs(dy) > 0.5 ? 1 : undefined
+                                                            },
                                                             children: [
-                                                                "#",
-                                                                rank + 1
-                                                            ]
-                                                        }, void 0, true, {
-                                                            fileName: "[project]/components/SearchConsole.tsx",
-                                                            lineNumber: 295,
-                                                            columnNumber: 21
-                                                        }, this),
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                            className: "result__body",
-                                                            children: [
-                                                                h.product.id === "me" ? // eslint-disable-next-line @next/next/no-img-element
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("img", {
-                                                                    className: "result__thumb result__thumb--me",
-                                                                    src: "/assets/thumb-me.webp",
-                                                                    alt: "",
-                                                                    width: 44,
-                                                                    height: 44,
-                                                                    loading: "lazy"
-                                                                }, void 0, false, {
-                                                                    fileName: "[project]/components/SearchConsole.tsx",
-                                                                    lineNumber: 300,
-                                                                    columnNumber: 25
-                                                                }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                                    className: "result__thumb"
-                                                                }, void 0, false, {
-                                                                    fileName: "[project]/components/SearchConsole.tsx",
-                                                                    lineNumber: 309,
-                                                                    columnNumber: 25
-                                                                }, this),
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                                    className: "result__text",
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                                    type: "button",
+                                                                    className: "result__head",
+                                                                    onClick: ()=>setOpenRow(isOpen ? null : h.product.id),
+                                                                    "aria-expanded": isOpen,
                                                                     children: [
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                                            className: "result__title",
+                                                                            className: "result__rank",
                                                                             children: [
-                                                                                h.product.title,
-                                                                                h.product.size && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                                                    className: "result__size",
+                                                                                "#",
+                                                                                shown + 1
+                                                                            ]
+                                                                        }, void 0, true, {
+                                                                            fileName: "[project]/components/SearchConsole.tsx",
+                                                                            lineNumber: 619,
+                                                                            columnNumber: 25
+                                                                        }, this),
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                            className: "result__body",
+                                                                            children: [
+                                                                                h.product.id === "me" ? // eslint-disable-next-line @next/next/no-img-element
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("img", {
+                                                                                    className: "result__thumb result__thumb--me",
+                                                                                    src: "/assets/thumb-me.webp",
+                                                                                    alt: "",
+                                                                                    width: 44,
+                                                                                    height: 44,
+                                                                                    loading: "lazy"
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/components/SearchConsole.tsx",
+                                                                                    lineNumber: 624,
+                                                                                    columnNumber: 29
+                                                                                }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                                    className: "result__thumb"
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/components/SearchConsole.tsx",
+                                                                                    lineNumber: 633,
+                                                                                    columnNumber: 29
+                                                                                }, this),
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                                    className: "result__text",
                                                                                     children: [
-                                                                                        " ",
-                                                                                        "· ",
-                                                                                        h.product.size.value,
-                                                                                        " ",
-                                                                                        h.product.size.unit.toUpperCase()
+                                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                                            className: "result__title",
+                                                                                            children: [
+                                                                                                h.product.title,
+                                                                                                h.product.size && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                                                    className: "result__size",
+                                                                                                    children: [
+                                                                                                        " ",
+                                                                                                        "· ",
+                                                                                                        h.product.size.value,
+                                                                                                        " ",
+                                                                                                        h.product.size.unit.toUpperCase()
+                                                                                                    ]
+                                                                                                }, void 0, true, {
+                                                                                                    fileName: "[project]/components/SearchConsole.tsx",
+                                                                                                    lineNumber: 639,
+                                                                                                    columnNumber: 33
+                                                                                                }, this)
+                                                                                            ]
+                                                                                        }, void 0, true, {
+                                                                                            fileName: "[project]/components/SearchConsole.tsx",
+                                                                                            lineNumber: 636,
+                                                                                            columnNumber: 29
+                                                                                        }, this),
+                                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                                            className: "result__meta",
+                                                                                            children: (_h_filteredOut = h.filteredOut) !== null && _h_filteredOut !== void 0 ? _h_filteredOut : [
+                                                                                                h.product.brand,
+                                                                                                h.product.price > 0 ? "₹".concat(h.product.price.toLocaleString("en-IN")) : null
+                                                                                            ].filter(Boolean).join(" · ")
+                                                                                        }, void 0, false, {
+                                                                                            fileName: "[project]/components/SearchConsole.tsx",
+                                                                                            lineNumber: 645,
+                                                                                            columnNumber: 29
+                                                                                        }, this)
                                                                                     ]
                                                                                 }, void 0, true, {
                                                                                     fileName: "[project]/components/SearchConsole.tsx",
-                                                                                    lineNumber: 315,
-                                                                                    columnNumber: 29
+                                                                                    lineNumber: 635,
+                                                                                    columnNumber: 27
                                                                                 }, this)
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/components/SearchConsole.tsx",
-                                                                            lineNumber: 312,
+                                                                            lineNumber: 621,
                                                                             columnNumber: 25
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                                            className: "result__meta",
-                                                                            children: (_h_filteredOut = h.filteredOut) !== null && _h_filteredOut !== void 0 ? _h_filteredOut : [
-                                                                                h.product.brand,
-                                                                                h.product.price > 0 ? "₹".concat(h.product.price.toLocaleString("en-IN")) : null
-                                                                            ].filter(Boolean).join(" · ")
+                                                                            className: "result__bar",
+                                                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                                className: "result__fill",
+                                                                                style: {
+                                                                                    width: "".concat(Math.round(h.norm * 100), "%")
+                                                                                }
+                                                                            }, void 0, false, {
+                                                                                fileName: "[project]/components/SearchConsole.tsx",
+                                                                                lineNumber: 660,
+                                                                                columnNumber: 27
+                                                                            }, this)
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/components/SearchConsole.tsx",
-                                                                            lineNumber: 321,
+                                                                            lineNumber: 659,
+                                                                            columnNumber: 25
+                                                                        }, this),
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                            className: "result__score".concat(h.norm > 0.7 ? " is-high" : ""),
+                                                                            children: h.norm.toFixed(2)
+                                                                        }, void 0, false, {
+                                                                            fileName: "[project]/components/SearchConsole.tsx",
+                                                                            lineNumber: 666,
+                                                                            columnNumber: 25
+                                                                        }, this),
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                            className: "result__caret",
+                                                                            "aria-hidden": "true",
+                                                                            children: isOpen ? "hide" : "why?"
+                                                                        }, void 0, false, {
+                                                                            fileName: "[project]/components/SearchConsole.tsx",
+                                                                            lineNumber: 670,
                                                                             columnNumber: 25
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/components/SearchConsole.tsx",
-                                                                    lineNumber: 311,
+                                                                    lineNumber: 613,
                                                                     columnNumber: 23
-                                                                }, this)
-                                                            ]
-                                                        }, void 0, true, {
-                                                            fileName: "[project]/components/SearchConsole.tsx",
-                                                            lineNumber: 297,
-                                                            columnNumber: 21
-                                                        }, this),
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                            className: "result__bar",
-                                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                                className: "result__fill",
-                                                                style: {
-                                                                    width: "".concat(Math.round(h.norm * 100), "%")
-                                                                }
-                                                            }, void 0, false, {
-                                                                fileName: "[project]/components/SearchConsole.tsx",
-                                                                lineNumber: 336,
-                                                                columnNumber: 23
-                                                            }, this)
-                                                        }, void 0, false, {
-                                                            fileName: "[project]/components/SearchConsole.tsx",
-                                                            lineNumber: 335,
-                                                            columnNumber: 21
-                                                        }, this),
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                            className: "result__score".concat(h.norm > 0.7 ? " is-high" : ""),
-                                                            children: h.norm.toFixed(2)
-                                                        }, void 0, false, {
-                                                            fileName: "[project]/components/SearchConsole.tsx",
-                                                            lineNumber: 342,
-                                                            columnNumber: 21
-                                                        }, this),
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                            className: "result__caret",
-                                                            "aria-hidden": "true",
-                                                            children: isOpen ? "hide" : "why?"
-                                                        }, void 0, false, {
-                                                            fileName: "[project]/components/SearchConsole.tsx",
-                                                            lineNumber: 346,
-                                                            columnNumber: 21
-                                                        }, this)
-                                                    ]
-                                                }, void 0, true, {
-                                                    fileName: "[project]/components/SearchConsole.tsx",
-                                                    lineNumber: 289,
-                                                    columnNumber: 19
-                                                }, this),
-                                                isOpen && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                    className: "breakdown",
-                                                    children: h.signals.map((s)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                            className: "breakdown__row",
-                                                            children: [
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                                    className: "breakdown__label",
-                                                                    children: s.label
+                                                                }, this),
+                                                                isOpen && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                    className: "breakdown",
+                                                                    children: h.signals.map((s)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                            className: "breakdown__row",
+                                                                            children: [
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                                    className: "breakdown__label",
+                                                                                    children: s.label
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/components/SearchConsole.tsx",
+                                                                                    lineNumber: 679,
+                                                                                    columnNumber: 31
+                                                                                }, this),
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                                    className: "breakdown__track",
+                                                                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                                        className: "breakdown__bar".concat(s.value < 0 ? " is-neg" : ""),
+                                                                                        style: {
+                                                                                            width: "".concat(Math.abs(s.value) / max * 100, "%")
+                                                                                        }
+                                                                                    }, void 0, false, {
+                                                                                        fileName: "[project]/components/SearchConsole.tsx",
+                                                                                        lineNumber: 681,
+                                                                                        columnNumber: 33
+                                                                                    }, this)
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/components/SearchConsole.tsx",
+                                                                                    lineNumber: 680,
+                                                                                    columnNumber: 31
+                                                                                }, this),
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                                    className: "breakdown__val",
+                                                                                    children: [
+                                                                                        s.value >= 0 ? "+" : "−",
+                                                                                        Math.abs(s.value).toFixed(2)
+                                                                                    ]
+                                                                                }, void 0, true, {
+                                                                                    fileName: "[project]/components/SearchConsole.tsx",
+                                                                                    lineNumber: 686,
+                                                                                    columnNumber: 31
+                                                                                }, this)
+                                                                            ]
+                                                                        }, s.key + s.label, true, {
+                                                                            fileName: "[project]/components/SearchConsole.tsx",
+                                                                            lineNumber: 678,
+                                                                            columnNumber: 29
+                                                                        }, this))
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/components/SearchConsole.tsx",
-                                                                    lineNumber: 355,
-                                                                    columnNumber: 27
-                                                                }, this),
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                                    className: "breakdown__track",
-                                                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                                        className: "breakdown__bar".concat(s.value < 0 ? " is-neg" : ""),
-                                                                        style: {
-                                                                            width: "".concat(Math.abs(s.value) / max * 100, "%")
-                                                                        }
-                                                                    }, void 0, false, {
-                                                                        fileName: "[project]/components/SearchConsole.tsx",
-                                                                        lineNumber: 357,
-                                                                        columnNumber: 29
-                                                                    }, this)
-                                                                }, void 0, false, {
-                                                                    fileName: "[project]/components/SearchConsole.tsx",
-                                                                    lineNumber: 356,
-                                                                    columnNumber: 27
-                                                                }, this),
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                                    className: "breakdown__val",
-                                                                    children: [
-                                                                        s.value >= 0 ? "+" : "−",
-                                                                        Math.abs(s.value).toFixed(2)
-                                                                    ]
-                                                                }, void 0, true, {
-                                                                    fileName: "[project]/components/SearchConsole.tsx",
-                                                                    lineNumber: 362,
-                                                                    columnNumber: 27
+                                                                    lineNumber: 676,
+                                                                    columnNumber: 25
                                                                 }, this)
                                                             ]
-                                                        }, s.key + s.label, true, {
+                                                        }, h.product.id, true, {
                                                             fileName: "[project]/components/SearchConsole.tsx",
-                                                            lineNumber: 354,
-                                                            columnNumber: 25
-                                                        }, this))
-                                                }, void 0, false, {
-                                                    fileName: "[project]/components/SearchConsole.tsx",
-                                                    lineNumber: 352,
-                                                    columnNumber: 21
-                                                }, this)
-                                            ]
-                                        }, h.product.id, true, {
-                                            fileName: "[project]/components/SearchConsole.tsx",
-                                            lineNumber: 284,
-                                            columnNumber: 17
-                                        }, this);
-                                    })
+                                                            lineNumber: 602,
+                                                            columnNumber: 21
+                                                        }, this);
+                                                    })
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/components/SearchConsole.tsx",
+                                                lineNumber: 579,
+                                                columnNumber: 15
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/components/SearchConsole.tsx",
+                                        lineNumber: 493,
+                                        columnNumber: 13
+                                    }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/SearchConsole.tsx",
-                                lineNumber: 271,
+                                lineNumber: 459,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3278,7 +6606,7 @@ function SearchConsole() {
                                                     children: "Your turn — search for something"
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/SearchConsole.tsx",
-                                                    lineNumber: 389,
+                                                    lineNumber: 715,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3291,24 +6619,24 @@ function SearchConsole() {
                                                             children: "→"
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/SearchConsole.tsx",
-                                                            lineNumber: 391,
+                                                            lineNumber: 717,
                                                             columnNumber: 35
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/components/SearchConsole.tsx",
-                                                    lineNumber: 390,
+                                                    lineNumber: 716,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/components/SearchConsole.tsx",
-                                            lineNumber: 381,
+                                            lineNumber: 707,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/components/SearchConsole.tsx",
-                                        lineNumber: 380,
+                                        lineNumber: 706,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3324,7 +6652,7 @@ function SearchConsole() {
                                                     children: "Try one →"
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/SearchConsole.tsx",
-                                                    lineNumber: 398,
+                                                    lineNumber: 724,
                                                     columnNumber: 17
                                                 }, this),
                                                 SAMPLES.map((s)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -3335,30 +6663,30 @@ function SearchConsole() {
                                                         children: s
                                                     }, s, false, {
                                                         fileName: "[project]/components/SearchConsole.tsx",
-                                                        lineNumber: 402,
+                                                        lineNumber: 728,
                                                         columnNumber: 19
                                                     }, this))
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/components/SearchConsole.tsx",
-                                            lineNumber: 397,
+                                            lineNumber: 723,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/components/SearchConsole.tsx",
-                                        lineNumber: 396,
+                                        lineNumber: 722,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/SearchConsole.tsx",
-                                lineNumber: 379,
+                                lineNumber: 705,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/SearchConsole.tsx",
-                        lineNumber: 194,
+                        lineNumber: 428,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3366,7 +6694,7 @@ function SearchConsole() {
                         children: "// real BM25 + rule-based NER, in your browser · CTR/ATC are synthetic priors, not telemetry"
                     }, void 0, false, {
                         fileName: "[project]/components/SearchConsole.tsx",
-                        lineNumber: 417,
+                        lineNumber: 743,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3376,7 +6704,7 @@ function SearchConsole() {
                         children: announce
                     }, void 0, false, {
                         fileName: "[project]/components/SearchConsole.tsx",
-                        lineNumber: 423,
+                        lineNumber: 749,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3385,23 +6713,23 @@ function SearchConsole() {
                         children: "Lexical match gets you candidates. Synonyms, attribute fit and demand signals decide who actually deserves the top slot."
                     }, void 0, false, {
                         fileName: "[project]/components/SearchConsole.tsx",
-                        lineNumber: 427,
+                        lineNumber: 753,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/SearchConsole.tsx",
-                lineNumber: 182,
+                lineNumber: 416,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/components/SearchConsole.tsx",
-        lineNumber: 164,
+        lineNumber: 398,
         columnNumber: 5
     }, this);
 }
-_s(SearchConsole, "4tm8KDxeah71mbt9kg2if2yFlPg=", false, function() {
+_s(SearchConsole, "vJj7zQckS1z0jiOfsRzBhPhI//E=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$hooks$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useReducedMotion"],
         __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$hooks$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMounted"]

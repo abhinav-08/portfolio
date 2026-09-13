@@ -9,13 +9,7 @@
 
 import type { Unit } from "./catalogue";
 
-export type EntityType =
-  | "intent"
-  | "unit"
-  | "price"
-  | "category"
-  | "brand"
-  | "count";
+export type EntityType = "intent" | "unit" | "price" | "category" | "brand" | "count";
 
 export interface Entity {
   type: EntityType;
@@ -39,9 +33,32 @@ export interface ParsedQuery {
 }
 
 const STOPWORDS = new Set([
-  "a", "an", "the", "of", "for", "with", "and", "or", "to", "in", "on", "at",
-  "is", "are", "me", "my", "i", "some", "any", "please", "want", "need",
-  "buy", "get", "show", "find",
+  "a",
+  "an",
+  "the",
+  "of",
+  "for",
+  "with",
+  "and",
+  "or",
+  "to",
+  "in",
+  "on",
+  "at",
+  "is",
+  "are",
+  "me",
+  "my",
+  "i",
+  "some",
+  "any",
+  "please",
+  "want",
+  "need",
+  "buy",
+  "get",
+  "show",
+  "find",
 ]);
 
 /** Dietary intents and the surface forms that signal them. */
@@ -55,25 +72,88 @@ const DIET_PATTERNS: Array<[string, RegExp]> = [
   ["vegetarian", /\b(vegetarian|veg)\b/],
 ];
 
-/** Category gazetteer — surface form → canonical category. */
+/**
+ * Category gazetteer — surface form → canonical category.
+ *
+ * Order is significant: the first match wins, so the most specific pattern has
+ * to come first. A dairy-free or vegan qualifier in front of "milk" means the
+ * alternatives aisle, not the dairy one; "coconut water" is a drink while
+ * "coconut milk" is not.
+ *
+ * Every category used in catalogue.ts needs a line here. A product in a
+ * category no pattern reaches can still be found by its own words, but no
+ * query will ever route to its aisle.
+ */
 const CATEGORY_TERMS: Array<[string, RegExp]> = [
-  // Ordered most-specific first. A dairy-free/vegan qualifier in front of
-  // "milk" means the alternatives aisle, not the dairy one.
-  ["milk alternative", /\b(oat|almond|soy|soya|coconut) ?milk\b|\bmilk alt(ernative)?s?\b|\bplant milk\b|\b(dairy[\s-]?free|non[\s-]?dairy|vegan|plant[\s-]?based)\b[^.]{0,12}\bmilk\b/],
+  [
+    "milk alternative",
+    /\b(oat|almond|soy|soya|coconut|cashew|rice) ?milk\b|\bmilk alt(ernative)?s?\b|\bplant milk\b|\b(dairy[\s-]?free|non[\s-]?dairy|vegan|plant[\s-]?based)\b[^.]{0,12}\bmilk\b/,
+  ],
+  /* "frozen" sits above "dairy" deliberately: "ice cream" contains "cream",
+     and the first match wins. Reordering is cheaper than a lookbehind. */
+  ["frozen", /\b(frozen|freezer|ice cream|fries|paratha)\b/],
+  [
+    "dairy",
+    /\b(curd|dahi|yogh?urt|paneer|butter|makhan|cheese|mozzarella|ghee|cream|malai|lassi|chaas)\b/,
+  ],
   ["milk", /\bmilk\b|\bdoodh\b/],
-  ["bread", /\bbread\b|\bloaf\b|\bbun\b|\bbakery\b/],
-  ["snacks", /\bsnacks?\b|\bchips\b|\bcrisps\b|\bbiscuits?\b|\bcookies?\b|\bnamkeen\b|\bchocolate\b|\bnuts\b/],
-  ["produce", /\b(fruits?|vegetables?|veggies|produce|greens|salad)\b/],
-  ["staples", /\b(rice|atta|flour|dal|lentils?|pulses|oil|staples?)\b/],
-  ["beverages", /\b(tea|coffee|juice|water|soda|drinks?|beverages?)\b/],
-  ["household", /\b(detergent|dishwash|cleaning|tissue|household)\b/],
+  ["eggs", /\b(eggs?|anda|ande)\b/],
+  ["bread", /\b(bread|loaf|bun|pav|bakery|rusk|breadsticks?)\b/],
+  [
+    "breakfast",
+    /\b(oats|porridge|cereals?|cornflakes|corn flakes|muesli|granola|jam|honey|shahad|peanut butter|breakfast)\b/,
+  ],
+  [
+    "snacks",
+    /\b(snacks?|chips|crisps|biscuits?|cookies?|namkeen|bhujia|sev|chocolates?|nuts|popcorn|makhana|noodles|maggi)\b/,
+  ],
+  ["produce", /\b(fruits?|vegetables?|veggies|produce|greens|salad|sabzi|sabji)\b/],
+  [
+    "spices",
+    /\b(spices?|masala|haldi|turmeric|chilli|chili|mirch|jeera|cumin|dhania|coriander powder|pepper|seasoning)\b/,
+  ],
+  [
+    "condiments",
+    /\b(ketchup|sauces?|mayonnaise|mayo|pickles?|achar|chutney|vinegar|sirka|dips?)\b/,
+  ],
+  [
+    "staples",
+    /\b(rice|chawal|atta|flour|besan|sooji|rava|poha|dals?|lentils?|pulses|rajma|chana|oil|sugar|cheeni|salt|namak|staples?|grocer(y|ies)|ration)\b/,
+  ],
+  [
+    "beverages",
+    /\b(tea|chai|coffee|juice|water|soda|cola|soft drinks?|drinks?|beverages?|milkshake)\b/,
+  ],
+  [
+    "personal care",
+    /\b(soap|shampoo|toothpaste|handwash|sanitiser|sanitizer|deodorant|hair oil|sanitary|toilet paper|personal care|toiletries)\b/,
+  ],
+  ["baby", /\b(baby|diapers?|nappy|wipes|infant|toddler)\b/],
+  ["pet", /\b(pet|dog|cat|kibble|litter)\b/],
+  [
+    "household",
+    /\b(detergent|dishwash|bartan|cleaning|cleaner|disinfectant|phenyl|pocha|tissue|paper towels?|foil|cling film|garbage|bin bags?|dustbin|kachra|mop|scrub|sponge|duster|mosquito|machhar|pest|cockroach|insect|air freshener|room spray|bulb|matchbox|household|home essentials)\b/,
+  ],
 ];
 
 const UNIT_ALIASES: Record<string, Unit> = {
-  l: "l", ltr: "l", litre: "l", litres: "l", liter: "l", liters: "l",
+  l: "l",
+  ltr: "l",
+  litre: "l",
+  litres: "l",
+  liter: "l",
+  liters: "l",
   ml: "ml",
-  g: "g", gm: "g", gms: "g", gram: "g", grams: "g",
-  kg: "kg", kgs: "kg", kilo: "kg", kilos: "kg", kilogram: "kg",
+  g: "g",
+  gm: "g",
+  gms: "g",
+  gram: "g",
+  grams: "g",
+  kg: "kg",
+  kgs: "kg",
+  kilo: "kg",
+  kilos: "kg",
+  kilogram: "kg",
 };
 
 /**
@@ -82,27 +162,94 @@ const UNIT_ALIASES: Record<string, Unit> = {
  * treats expanded terms as a separate, lower-weighted signal either way.
  */
 export const SYNONYMS: Record<string, string[]> = {
+  // staples & grains
   milk: ["dairy", "doodh"],
+  rice: ["chawal", "basmati", "grain"],
+  flour: ["atta", "chakki"],
+  atta: ["flour", "roti"],
+  lentil: ["dal", "pulses", "toor"],
+  dal: ["lentil", "pulses"],
+  chickpea: ["chana", "chole", "kabuli"],
+  oil: ["ghani", "cooking oil"],
+  sugar: ["cheeni", "sweetener"],
+  salt: ["namak"],
+  jaggery: ["gur", "sweetener"],
+  poha: ["flattened rice"],
+  sooji: ["rava", "semolina"],
+  besan: ["gram flour", "chickpea"],
+
+  // dairy
+  curd: ["dahi", "yoghurt", "yogurt"],
+  yoghurt: ["curd", "dahi"],
+  paneer: ["cottage cheese"],
+  butter: ["makhan"],
+  ghee: ["clarified butter"],
+  cream: ["malai"],
+  egg: ["anda", "ande"],
+
+  // bakery & breakfast
+  bread: ["loaf", "atta"],
+  bun: ["pav"],
+  oats: ["porridge", "cereal"],
+  cereal: ["flakes", "muesli", "granola"],
+  honey: ["shahad"],
+
+  // snacks
   chips: ["crisps", "wafers", "namkeen"],
   biscuit: ["cookie", "biscuits", "cookies"],
   cookies: ["biscuits"],
-  bread: ["loaf", "atta"],
-  rice: ["chawal", "basmati", "grain"],
-  flour: ["atta", "chakki"],
-  lentil: ["dal", "pulses", "toor"],
-  dal: ["lentil", "pulses"],
-  oil: ["ghani", "cooking oil"],
-  tea: ["chai"],
-  coffee: ["caffeine", "brew"],
-  water: ["soda", "sparkling"],
+  namkeen: ["bhujia", "sev", "mixture"],
+  nuts: ["almonds", "dry fruit", "cashew"],
+  noodles: ["maggi", "instant"],
+  makhana: ["fox nuts"],
+
+  // produce
   spinach: ["palak", "greens", "leafy"],
   tomato: ["tamatar"],
   carrot: ["gajar"],
   banana: ["kela"],
+  onion: ["pyaz"],
+  potato: ["aloo"],
+  apple: ["seb"],
+  mango: ["aam"],
+  lemon: ["nimbu"],
+  cucumber: ["kheera"],
+  ginger: ["adrak"],
+  garlic: ["lehsun"],
+  cauliflower: ["gobi"],
+  okra: ["bhindi", "lady finger"],
+  peas: ["matar"],
+  corn: ["makai", "sweet corn"],
+  coriander: ["dhania"],
+
+  // spices & condiments
+  turmeric: ["haldi"],
+  chilli: ["mirch", "spicy"],
+  cumin: ["jeera"],
+  pepper: ["kali mirch"],
+  masala: ["spice", "blend", "seasoning"],
+  pickle: ["achar"],
+  ketchup: ["sauce", "tamatar"],
+  vinegar: ["sirka"],
+
+  // beverages
+  tea: ["chai"],
+  coffee: ["caffeine", "brew"],
+  water: ["soda", "sparkling"],
+
+  // household
+  detergent: ["washing", "laundry", "kapda"],
+  dishwash: ["bartan", "utensil"],
+  cleaner: ["cleaning", "disinfectant"],
+  floor: ["pocha", "phenyl"],
+  tissue: ["paper towels", "roll"],
+  garbage: ["bin bags", "dustbin", "kachra"],
+  mosquito: ["machhar", "repellent"],
+  pest: ["insect", "cockroach"],
+
+  // intent-ish
   cheap: ["budget", "value"],
   healthy: ["baked", "millet", "protein"],
-  nuts: ["almonds", "dry fruit"],
-  detergent: ["washing", "laundry"],
 };
 
 /**
