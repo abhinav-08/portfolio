@@ -78,9 +78,12 @@ export function Skills() {
         <p className="sechead__intro">{skillsIntro}</p>
       </div>
 
-      {/* The gold rule runs across the whole group, not per card — it marks
-          these three as the primary tier rather than decorating each one. */}
-      <div className="cellgrid core" data-reveal="120">
+      {/* One panel, not two. The core three and the toolbox share a single
+          border and a single hairline grid; the divider bar in the middle is
+          just another cell, so the vertical hairlines run unbroken from the
+          gold rule at the top to the bottom edge. The gold rule marks the
+          whole group as the primary tier rather than decorating each card. */}
+      <div className="cellgrid skillstack" data-reveal="120">
         {coreSkills.map((c) => (
           <article className="core__card" key={c.name}>
             <div className="core__top">
@@ -108,25 +111,25 @@ export function Skills() {
             </div>
           </article>
         ))}
-      </div>
 
-      <div className="block" data-reveal="160">
-        <BlockHead label="Also in the toolbox" action="Shipped, not skimmed" />
-        <div className="cellgrid tools">
-          {toolGroups.map((g) => (
-            <div className="tools__cell" key={g.label}>
-              <p className="tools__label">{g.label}</p>
-              <ul className="tools__list">
-                {g.items.map((i) => (
-                  <li className="tools__item" key={i.name}>
-                    <span className="tools__name">{i.name}</span>
-                    <span className="tools__desc">{i.descriptor}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+        <div className="skillstack__bar">
+          <p className="blockhead__label">Also in the toolbox</p>
+          <span className="blockhead__count">Shipped, not skimmed</span>
         </div>
+
+        {toolGroups.map((g) => (
+          <div className="tools__cell" key={g.label}>
+            <p className="tools__label">{g.label}</p>
+            <ul className="tools__list">
+              {g.items.map((i) => (
+                <li className="tools__item" key={i.name}>
+                  <span className="tools__name">{i.name}</span>
+                  <span className="tools__desc">{i.descriptor}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </div>
 
       <div className="skills__foot" data-reveal="200">

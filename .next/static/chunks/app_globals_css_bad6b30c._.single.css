@@ -7,6 +7,7 @@
       --tw-rotate-z: initial;
       --tw-skew-x: initial;
       --tw-skew-y: initial;
+      --tw-border-style: solid;
       --tw-shadow: 0 0 rgba(0, 0, 0, 0);
       --tw-shadow-color: initial;
       --tw-shadow-alpha: 100%;
@@ -42,6 +43,7 @@
       --tw-rotate-z: initial;
       --tw-skew-x: initial;
       --tw-skew-y: initial;
+      --tw-border-style: solid;
       --tw-shadow: 0 0 rgba(0, 0, 0, 0);
       --tw-shadow-color: initial;
       --tw-shadow-alpha: 100%;
@@ -495,6 +497,11 @@
 
   .rounded {
     border-radius: .25rem;
+  }
+
+  .border {
+    border-style: var(--tw-border-style);
+    border-width: 1px;
   }
 
   .italic {
@@ -2617,10 +2624,47 @@ button {
   height: 5px;
 }
 
-.core {
+.skillstack {
   border-top: 2px solid var(--accent-50);
-  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  grid-template-columns: repeat(12, minmax(0, 1fr));
   margin-top: max(30px, min(3.4vw, 52px));
+}
+
+.skillstack > .core__card {
+  grid-column: span 4;
+}
+
+.skillstack > .tools__cell {
+  grid-column: span 3;
+}
+
+.skillstack__bar {
+  background: var(--surface-alt);
+  flex-wrap: wrap;
+  grid-column: span 12;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 20px;
+  padding: 16px max(22px, min(2vw, 30px));
+  display: flex;
+}
+
+@media (max-width: 1000px) {
+  .skillstack > .tools__cell {
+    grid-column: span 6;
+  }
+}
+
+@media (max-width: 900px) {
+  .skillstack > .core__card {
+    grid-column: span 12;
+  }
+}
+
+@media (max-width: 560px) {
+  .skillstack > .tools__cell {
+    grid-column: span 12;
+  }
 }
 
 .core__card {
@@ -2702,11 +2746,6 @@ button {
   color: var(--text-35);
   font-size: 10px;
   line-height: 1.6;
-}
-
-.tools {
-  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
-  margin-top: max(18px, min(2vw, 28px));
 }
 
 .tools__cell {
@@ -4051,6 +4090,12 @@ button {
 @property --tw-skew-y {
   syntax: "*";
   inherits: false
+}
+
+@property --tw-border-style {
+  syntax: "*";
+  inherits: false;
+  initial-value: solid;
 }
 
 @property --tw-shadow {

@@ -2248,10 +2248,58 @@ button {
 
 /* The 2px gold rule sits on the group, not the cards. It is what says
    "this tier is primary" — repeating it per card would just be decoration. */
-.core {
-  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+/* One 12-column track shared by both tiers: 3 core cards at span 4, 4 toolbox
+   cells at span 3. Twelve divides by both, so the two rows sit on a single
+   hairline system instead of two grids that happen to be stacked — which is
+   what made them read as separate panels before.
+   No auto-fit here: auto-fit resolves per grid, and two independently
+   resolving grids cannot be guaranteed to agree on a column count. The spans
+   are stepped down by hand at each breakpoint instead. */
+.skillstack {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
   margin-top: clamp(30px, 3.4vw, 52px);
   border-top: 2px solid var(--accent-50);
+}
+
+.skillstack > .core__card {
+  grid-column: span 4;
+}
+.skillstack > .tools__cell {
+  grid-column: span 3;
+}
+
+/* The divider bar is a cell like any other, so the vertical hairlines above
+   and below it are one continuous line rather than two grids' edges. */
+.skillstack__bar {
+  grid-column: span 12;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 16px clamp(22px, 2vw, 30px);
+  background: var(--surface-alt);
+}
+
+/* 1000px, not 1080: at 1024 the four toolbox cells still clear 240px each,
+   which every label and descriptor fits inside. Dropping to 2-up there instead
+   doubled the panel's height and left each cell half empty. */
+@media (max-width: 1000px) {
+  .skillstack > .tools__cell {
+    grid-column: span 6;
+  }
+}
+
+@media (max-width: 900px) {
+  .skillstack > .core__card {
+    grid-column: span 12;
+  }
+}
+
+@media (max-width: 560px) {
+  .skillstack > .tools__cell {
+    grid-column: span 12;
+  }
 }
 
 .core__card {
@@ -2338,11 +2386,6 @@ button {
 }
 
 /* Supporting cast ----------------------------------------------------- */
-
-.tools {
-  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
-  margin-top: clamp(18px, 2vw, 28px);
-}
 
 .tools__cell {
   padding: 24px 22px;
