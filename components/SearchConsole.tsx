@@ -18,7 +18,11 @@ const STAGES = [
   { name: "recall", note: "BM25 candidates" },
   { name: "rescore", note: "signals decide" },
 ] as const;
-const DURS = [1400, 1900, 1700];
+/* parse is the longest of the three on purpose. It is the stage a visitor has
+   to actually read — every other stage is motion they can follow at a glance,
+   but the chips are text, and three or four of them arriving one at a time
+   need time on screen after the last one lands, not just while they arrive. */
+const DURS = [2400, 1900, 1700];
 const HOLD = 900;
 const TOTAL = DURS[0] + DURS[1] + DURS[2] + HOLD;
 
@@ -345,7 +349,11 @@ export default function SearchConsole() {
         ? parsed.entities.length
         : 0
       : active === 0
-        ? Math.floor(prog * (parsed.entities.length + 0.4))
+        ? /* Finish the reveal at 70% of the stage, not at its very end. Spread
+             across the full duration the last chip appeared on the frame parse
+             handed over to recall, so the completed breakdown was never once on
+             screen lit — the reveal needs to land before the stage does. */
+          Math.floor(clamp01(prog / 0.7) * (parsed.entities.length + 0.4))
         : parsed.entities.length;
 
   /* Measure after layout, before paint: the travel offsets are needed on the
