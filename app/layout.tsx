@@ -163,15 +163,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang="en"
       className={`${cormorant.variable} ${instrument.variable} ${plexMono.variable}`}
-      /* The intro hold stamps data-intro / data-intro-hero onto this element
-         before first paint, so by hydration the DOM carries two attributes the
-         server never rendered and React reports a mismatch. The attributes
-         cannot come from the server: the decision depends on viewport width and
-         the motion preference, neither of which exists there.
-         This flag applies one level deep — to this element's own attributes
-         only — so it silences exactly that and still reports any real mismatch
-         inside the page. */
-      suppressHydrationWarning
     >
       <head>
         <link
@@ -184,28 +175,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
-        {/*
-         * Holds the hero's entrance while the intro plays, so the page arrives
-         * as the intro leaves instead of sitting there finished behind it.
-         *
-         * It has to run before first paint — by the time React hydrates, the
-         * 60ms/120ms/260ms animations have already started, and pausing them
-         * then would freeze the hero half-built. The predicate is a copy of
-         * HeroMotion's; keep the two in step.
-         *
-         * The timeout is the safety net: if the bundle never runs, the hold
-         * clears itself rather than leaving the hero invisible for good.
-         */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html:
-              "try{var r=matchMedia('(prefers-reduced-motion: reduce)').matches;" +
-              "if(!r&&window.innerWidth>=320){var d=document.documentElement;" +
-              "d.setAttribute('data-intro','');d.setAttribute('data-intro-hero','');" +
-              "setTimeout(function(){d.removeAttribute('data-intro');" +
-              "d.removeAttribute('data-intro-hero')},15000)}}catch(e){}",
-          }}
         />
       </head>
       <body>{children}</body>

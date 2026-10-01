@@ -76,11 +76,6 @@ export interface Layout {
     right: number | null;
   };
   marquee: { h: number; font: number };
-  /** The mid-piece headline, which is full-bleed and so sized per canvas. */
-  headline: number;
-  headlineSub: number;
-  headlineGap: number;
-  headlinePad: number;
 }
 
 export const LANDSCAPE: Layout = {
@@ -133,10 +128,6 @@ export const LANDSCAPE: Layout = {
   },
   portrait: { size: 800, bottom: 70, right: -10 },
   marquee: { h: 70, font: 22 },
-  headline: 130,
-  headlineSub: 26,
-  headlineGap: 34,
-  headlinePad: 90,
 };
 
 /**
@@ -200,12 +191,6 @@ export const PORTRAIT: Layout = {
      straight into "25K+". */
   portrait: { size: 640, bottom: 120, right: null },
   marquee: { h: 90, font: 28 },
-  /* 96, not 130: "I teach machines what people mean." sets to three lines at
-     1080 wide, and at 130 the third line would push past the canvas. */
-  headline: 96,
-  headlineSub: 30,
-  headlineGap: 34,
-  headlinePad: 70,
 };
 
 /**

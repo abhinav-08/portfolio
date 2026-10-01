@@ -4272,30 +4272,6 @@ button {
   border-color: var(--accent-40);
 }
 
-html[data-intro] .header, html[data-intro] .bg-field, html[data-intro-hero] .hero__eyebrow, html[data-intro-hero] .hero__lede, html[data-intro-hero] .cta-row, html[data-intro-hero] .social-row, html[data-intro-hero] .portrait, html[data-intro-hero] .hero__rule {
-  animation-play-state: paused;
-}
-
-.hero__name {
-  transition: opacity .9s ease, transform .82s var(--ease-rise);
-}
-
-html[data-intro-hero] .hero__name {
-  opacity: 0;
-  transform: translateY(26px);
-}
-
-html[data-intro-hero] [data-reveal].is-revealed {
-  opacity: 0;
-  transform: translateY(30px);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hero__name {
-    transition: none !important;
-  }
-}
-
 @property --tw-rotate-x {
   syntax: "*";
   inherits: false

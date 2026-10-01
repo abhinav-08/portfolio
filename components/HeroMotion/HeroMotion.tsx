@@ -32,17 +32,16 @@ import {
   EXIT_DUR,
   EXIT_FROM,
   GROUND_AT,
-  HERO_AT,
+  GROUND_DUR,
+  INK_AT,
+  INK_DUR,
   STRIP_DUR,
   TOTAL,
-  VANISH_AT,
-  VANISH_DUR,
   useIntroClock,
 } from "./clock";
 import { clamp01, draw, enter, lerp } from "./motion";
 import { SearchScene } from "./SearchScene";
 import { LANDSCAPE, type Layout, pickLayout } from "./layout";
-import { Headline } from "./Headline";
 
 /* Below this the piece is not legible on any canvas, and a gate nobody can
    read is worse than no intro. 320px is the narrowest phone still in use. */
@@ -125,22 +124,6 @@ export default function HeroMotion() {
 
   const t = useIntroClock(phase === "playing");
 
-  /* Release the page's held entrance as the intro *starts* leaving, not when it
-     has gone: the hero's rise and the card's dissolve are meant to overlap. The
-     two run to roughly the same length, so by the time the overlay is at zero
-     the page beneath has just finished arriving. */
-  useEffect(() => {
-    /* "deciding" must fall through: the attribute was set before paint and the
-       component has not yet worked out whether the intro runs at all. Clearing
-       it here would release the page on the first frame — which is exactly the
-       abrupt handover this whole mechanism exists to remove. */
-    if (phase === "deciding") return;
-    const d = document.documentElement;
-    const over = phase !== "playing";
-    if (over || t >= GROUND_AT) d.removeAttribute("data-intro");
-    if (over || t >= HERO_AT) d.removeAttribute("data-intro-hero");
-  }, [phase, t]);
-
   useEffect(() => {
     if (phase === "playing" && t >= TOTAL) finish();
   }, [phase, t, finish]);
@@ -148,15 +131,22 @@ export default function HeroMotion() {
   if (phase !== "playing") return null;
 
   const exit = draw(t, EXIT_FROM, STRIP_DUR);
-  const vanish = draw(t, VANISH_AT, VANISH_DUR);
-  /* A slow push through the card rather than a straight fade. The page is
-     arriving underneath on its own entrance; the camera moving means the two
-     are never both still at the same moment, which is what made the old
-     cross-dissolve read as a cut. */
+  /* Two curves, not one: the card's ink and the overlay's opaque ground. The
+     ink is gone before the ground starts lifting, so the page — which has been
+     sitting there finished the whole time — is never seen through the card. */
+  const ink = draw(t, INK_AT, INK_DUR);
+  const ground = draw(t, GROUND_AT, GROUND_DUR);
+  /* A slow push through the card rather than a straight fade, so the last thing
+     on screen is still moving when it goes. */
   const push = lerp(1, 1.06, enter(t, EXIT_FROM, EXIT_DUR));
 
   return (
-    <div className="heromotion" style={{ opacity: 1 - vanish }}>
+    <div
+      className="heromotion"
+      /* --bg spelled out as rgba: the ground has to fade its own alpha
+         independently of the canvas, and a var() hex cannot be interpolated. */
+      style={{ background: `rgba(14, 13, 11, ${1 - ground})` }}
+    >
       <div
         className="heromotion__canvas"
         /* role="img" belongs on the canvas, not on the wrapper. On the wrapper
@@ -169,11 +159,11 @@ export default function HeroMotion() {
         style={{
           width: fit.layout.w,
           height: fit.layout.h,
+          opacity: 1 - ink,
           transform: `translate(-50%, -50%) scale(${fit.scale * push})`,
         }}
       >
         <SearchScene t={t} exit={exit} L={fit.layout} />
-        <Headline t={t} L={fit.layout} />
       </div>
 
       <button

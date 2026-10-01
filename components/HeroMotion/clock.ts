@@ -3,56 +3,55 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * Cue sheet, in seconds. The handoff authors the piece as five scenes whose
- * durations sum to 12; these are the cumulative starts.
+ * Cue sheet, in seconds.
  *
- * Query 0 · Parse 2.2 · Headline 3.8 · Recall 5.4 · Rank 7.2 · end 12.0
+ * The handoff authors six cues — Query 0 · Parse 2.2 · Headline 3.8 ·
+ * Recall 5.4 · Rank 7.2 · end 12.0 — where Headline is a 1.6s hard cut to a
+ * full-bleed "I teach machines what people mean." The headline is gone, and
+ * with it that 1.6s: deleting the shot alone would have left the search scene
+ * sitting still from 3.8 to 5.4, parse finished and recall not yet started,
+ * which is a longer dead frame than the shot it replaced. Recall and Rank move
+ * up by exactly the shot's length instead, so every interval the handoff
+ * specifies between the remaining cues is preserved.
+ *
+ * Query 0 · Parse 2.2 · Recall 3.8 · Rank 5.6
  */
 export const CUES = {
   query: 0,
   parse: 2.2,
-  headline: 3.8,
-  recall: 5.4,
-  rank: 7.2,
+  recall: 3.8,
+  rank: 5.6,
 } as const;
 
-/** Where the card has finished assembling and the hold begins. */
-export const HOLD_FROM = 9.4;
-
 /**
- * The handover, in three overlapping beats.
+ * The handover, in three beats.
  *
  * The handoff ends at 12.0 because its last 0.45s crossfades back to the t=0
  * frame, which is what makes the loop seamless. Playing once, that window hands
- * over to the page instead — and a handover needs longer than a loop seam, so
- * the piece runs past the authored total rather than eating into the finale.
+ * over to the page instead.
  *
- *  STRIP    the card loses its border, ground, chips, tag, title and marquee,
- *           leaving a serif name on the left and the portrait on the right —
- *           which is the hero's own composition.
- *  VANISH   that name and portrait fade. At full strength they must not share
- *           the frame with the hero's: two sizes of "Abhinav Tyagi" offset by
- *           half a letter reads as a double exposure, not as a match cut.
- *  GROUND   the page's ambient layers — the background field's bloom and the
- *           header — are released while the overlay is still opaque. Nobody
- *           sees them arrive; the point is that the ground is already lit by
- *           the time the card thins. Released with everything else instead,
- *           mean frame luminance fell to 14 against a settled 58, and the
- *           handover read as a dip to black.
- *  HERO     the name, portrait and the rest of the hero. Late enough that the
- *           card's name and portrait have gone: the two are the same subject
- *           at slightly different sizes and places, so any real overlap
- *           doubles rather than dissolves. Measured peak simultaneous
- *           visibility at this offset is under 0.05.
+ *  STRIP   the card loses its border, ground, chips, tag, title and marquee,
+ *          leaving a serif name and the portrait — the hero's own composition.
+ *  INK     that name and portrait fade, while the overlay's ground is still
+ *          opaque. Nothing of the page is visible yet.
+ *  GROUND  the opaque ground lifts, revealing the page already settled
+ *          underneath.
+ *
+ * INK finishing before GROUND is the whole trick, and it is not padding: the
+ * page's name and portrait are the same subject as the card's, at a different
+ * size and place. Fading both on one curve shows them at 50% together, which
+ * reads as a double exposure. Separating them means the card is down to roughly
+ * a quarter before any of the page shows through, and effectively gone by the
+ * time it is half visible — the overlap is measured below 0.05.
  */
-export const EXIT_FROM = 11.55;
+export const EXIT_FROM = 9.95;
 export const STRIP_DUR = 0.4;
-export const VANISH_AT = EXIT_FROM + STRIP_DUR;
-export const VANISH_DUR = 0.4;
-export const GROUND_AT = EXIT_FROM;
-export const HERO_AT = EXIT_FROM + 0.68;
-export const EXIT_DUR = STRIP_DUR + VANISH_DUR;
-export const TOTAL = VANISH_AT + VANISH_DUR + 0.05;
+export const INK_AT = EXIT_FROM + STRIP_DUR;
+export const INK_DUR = 0.34;
+export const GROUND_AT = INK_AT + 0.24;
+export const GROUND_DUR = 0.42;
+export const EXIT_DUR = STRIP_DUR + INK_DUR;
+export const TOTAL = GROUND_AT + GROUND_DUR + 0.05;
 
 /**
  * One rAF clock in seconds, from wall time.
