@@ -3781,3 +3781,128 @@ button {
     transition: none !important;
   }
 }
+
+/* =============================================== HERO INTRO (motion) */
+
+/* A fixed overlay, not a section in the flow: the piece is a gate in front of
+   the page, and the page under it is already the finished hero. Above the
+   header (z 90) and the progress bar, below nothing. */
+.heromotion {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: var(--bg);
+  overflow: hidden;
+  /* The whole thing is decorative motion; the aria-label on the wrapper is the
+     accessible equivalent, and the exit tap targets are the Skip button and
+     every other gesture the component listens for. */
+  cursor: pointer;
+}
+
+/* The canvas is authored at a fixed 1920×1080 and scaled to fit. Centring by
+   translate rather than by margins keeps the transform on one property, so the
+   scale and the centring compose in a single composited step. */
+.heromotion__canvas {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform-origin: center center;
+  will-change: transform;
+}
+
+/* Only the camera group, the rows and the portrait get a will-change hint —
+   putting it on every node would cost more in layers than it saves. */
+.heromotion .hm-cam,
+.heromotion .hm-row,
+.heromotion .hm-portrait {
+  will-change: transform;
+}
+
+/* Deliberately quiet and deliberately unmissable. It fades in after the first
+   beat so it does not compete with the opening frame, and it sits in the
+   corner the eye lands on last. */
+.heromotion__skip {
+  position: absolute;
+  right: clamp(20px, 3vw, 44px);
+  bottom: clamp(20px, 3vw, 44px);
+  padding: 10px 18px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-55);
+  background: transparent;
+  border: 1px solid var(--hairline);
+  border-radius: 99px;
+  cursor: pointer;
+  transition:
+    color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.heromotion__skip:hover,
+.heromotion__skip:focus-visible {
+  color: var(--accent);
+  border-color: var(--accent-40);
+}
+
+/* ---- holding the page while the intro plays ---- */
+
+/* Set before first paint by the inline script in the document head, cleared by
+   HeroMotion the moment the intro starts leaving. Everything the hero animates
+   on load is held at frame zero for the duration, so the page performs its own
+   entrance *into* the gap the intro leaves — rather than being revealed, fully
+   assembled and motionless, by a cross-fade. A still frame dissolving to
+   another still frame is what reads as a cut. */
+/* The ambient layers release first, while the overlay is still opaque — the
+   ground has to be lit before the card thins, or the handover dips to black. */
+html[data-intro] .header,
+html[data-intro] .bg-field {
+  animation-play-state: paused;
+}
+
+/* The hero proper releases later, once the card's name and portrait are gone.
+   These are the same subject the card is showing, so they cannot cross it. */
+html[data-intro-hero] .hero__eyebrow,
+html[data-intro-hero] .hero__lede,
+html[data-intro-hero] .cta-row,
+html[data-intro-hero] .social-row,
+html[data-intro-hero] .portrait,
+html[data-intro-hero] .hero__rule {
+  animation-play-state: paused;
+}
+
+/* `.hero__name` has no load animation of its own — it is simply there. That is
+   right for a cold load and wrong for a handover, where the single biggest
+   element on the page would pop in. The transition is declared unconditionally
+   and is inert unless something moves it; only the held start state is scoped
+   to the intro, so a normal load is byte-for-byte the behaviour it had. */
+.hero__name {
+  /* Opacity on a plain ease, transform on the site's rise curve. --ease-rise
+     is heavily front-loaded — it reaches 63% in the first fifth — which on the
+     largest element on the page turned the handover's last beat into a 15-point
+     jump in mean frame luminance. The motion still wants that snap; the fade
+     does not. */
+  transition:
+    opacity 900ms ease,
+    transform 820ms var(--ease-rise);
+}
+
+html[data-intro-hero] .hero__name {
+  opacity: 0;
+  transform: translateY(26px);
+}
+
+/* Scroll-reveal runs on a class toggle, and a transition has no play state —
+   so the start frame is re-asserted instead. Releasing the attribute lets the
+   existing transition carry it home. */
+html[data-intro-hero] [data-reveal].is-revealed {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__name {
+    transition: none !important;
+  }
+}

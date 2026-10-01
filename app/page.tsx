@@ -1,6 +1,7 @@
 import Background from "@/components/Background";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
+import HeroMotion from "@/components/HeroMotion/HeroMotion";
 import Marquee from "@/components/Marquee";
 import SearchConsole from "@/components/SearchConsole";
 import Stats from "@/components/Stats";
@@ -37,6 +38,9 @@ export default function Page() {
       <Reveal />
       <ScrollFx />
       <HeroBreath />
+      {/* Last in the tree, and mounted client-side only: the page under it is
+          the server-rendered hero, so nothing is gated behind JavaScript. */}
+      <HeroMotion />
     </>
   );
 }

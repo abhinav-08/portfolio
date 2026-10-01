@@ -581,6 +581,10 @@
     visibility: collapse;
   }
 
+  .invisible {
+    visibility: hidden;
+  }
+
   .visible {
     visibility: visible;
   }
@@ -595,6 +599,10 @@
     padding: 0;
     position: absolute;
     overflow: hidden;
+  }
+
+  .absolute {
+    position: absolute;
   }
 
   .fixed {
@@ -627,6 +635,10 @@
 
   .hidden {
     display: none;
+  }
+
+  .inline-block {
+    display: inline-block;
   }
 
   .transform {
@@ -4205,6 +4217,81 @@ button {
   }
 
   .panelfoot, .invite, .samplechip, .panel__query, .result__caret, .spine__role, .spine__node, .spine__chip, .spine__cue, .spine__cue-arrow, .spine__blurb, .spine__meta, .result, .panel__results, .result__fill, .result__thumb, .result__score, .chip, .core__card, .note, .note__title, .readlink, .blockhead__action, .btn--primary, .ig__tile img {
+    transition: none !important;
+  }
+}
+
+.heromotion {
+  z-index: 200;
+  background: var(--bg);
+  cursor: pointer;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  overflow: hidden;
+}
+
+.heromotion__canvas {
+  transform-origin: center;
+  will-change: transform;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+}
+
+.heromotion .hm-cam, .heromotion .hm-row, .heromotion .hm-portrait {
+  will-change: transform;
+}
+
+.heromotion__skip {
+  font-family: var(--font-mono);
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--text-55);
+  border: 1px solid var(--hairline);
+  cursor: pointer;
+  background: none;
+  border-radius: 99px;
+  padding: 10px 18px;
+  font-size: 11px;
+  transition: color .3s, border-color .3s;
+  position: absolute;
+  bottom: max(20px, min(3vw, 44px));
+  right: max(20px, min(3vw, 44px));
+}
+
+.heromotion__skip:hover {
+  color: var(--accent);
+  border-color: var(--accent-40);
+}
+
+.heromotion__skip:focus-visible {
+  color: var(--accent);
+  border-color: var(--accent-40);
+}
+
+html[data-intro] .header, html[data-intro] .bg-field, html[data-intro-hero] .hero__eyebrow, html[data-intro-hero] .hero__lede, html[data-intro-hero] .cta-row, html[data-intro-hero] .social-row, html[data-intro-hero] .portrait, html[data-intro-hero] .hero__rule {
+  animation-play-state: paused;
+}
+
+.hero__name {
+  transition: opacity .9s ease, transform .82s var(--ease-rise);
+}
+
+html[data-intro-hero] .hero__name {
+  opacity: 0;
+  transform: translateY(26px);
+}
+
+html[data-intro-hero] [data-reveal].is-revealed {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__name {
     transition: none !important;
   }
 }
