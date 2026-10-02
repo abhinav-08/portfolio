@@ -3799,6 +3799,27 @@ button {
   cursor: pointer;
 }
 
+/* The overlay's copy of the glow field. Same children and therefore the same
+   keyframes as .bg-field; only the containing block differs, and since both
+   fill the viewport the vw-sized glows resolve identically. No `bloom` here —
+   that is the page-load entrance, and this instance is already on screen. */
+.heromotion__field {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* The page's breath layer is driven by an inline transform on #bg-breath. This
+   one reads the value HeroBreath publishes, so the two scale together rather
+   than drifting a few percent apart. */
+.heromotion__breath {
+  position: absolute;
+  inset: 0;
+  transform: scale(calc(1 + var(--breath, 0.5) * 0.035));
+  opacity: calc(0.86 + var(--breath, 0.5) * 0.14);
+}
+
 /* The canvas is authored at a fixed 1920×1080 and scaled to fit. Centring by
    translate rather than by margins keeps the transform on one property, so the
    scale and the centring compose in a single composited step. */

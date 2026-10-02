@@ -1670,6 +1670,7 @@ function HeroMotion() {
         scale: 1
     });
     const dismissed = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])(false);
+    const fieldRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])(null);
     /* Decide once the motion preference is known. Anything that disqualifies the
      intro resolves straight to `done`, which renders nothing at all.
 
@@ -1737,6 +1738,40 @@ function HeroMotion() {
     }, [
         phase
     ]);
+    /* Put the overlay's copy of the field in phase with the page's.
+     `.bg-field`'s glows started their 15–24s drifts at first paint; this copy
+     mounts after hydration, so left alone it runs the same keyframes about
+     600ms behind — enough to put the gold glow 26px wider and 12px off, which
+     is exactly the shift the copy exists to remove. Copying `currentTime`
+     across is exact, and once matched they stay matched: both run on the same
+     document timeline at the same rate.
+
+     On a frame, not in a layout effect: the elements have only just been
+     inserted, and their CSS animations do not exist yet when layout effects
+     run — `getAnimations()` comes back empty and the sync silently does
+     nothing. Retried for a few frames in case the first one is still early. */ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
+        if (phase !== "playing") return;
+        let raf = 0;
+        let tries = 0;
+        const sync = ()=>{
+            const host = fieldRef.current;
+            if (!host) return;
+            let pending = false;
+            for (const dst of Array.from(host.querySelectorAll("[class*='glow'], .grain"))){
+                const sel = ".bg-field " + dst.className.split(" ").filter(Boolean).map((c)=>"." + c).join("");
+                const src = document.querySelector(sel);
+                const from = src?.getAnimations?.()[0];
+                const to = dst.getAnimations?.()[0];
+                /* .glow--4 is deliberately unanimated — no counterpart, nothing to do. */ if (from && (!to || from.startTime === null)) pending = true;
+                if (from && to && from.startTime !== null) to.startTime = from.startTime;
+            }
+            if (pending && ++tries < 6) raf = requestAnimationFrame(sync);
+        };
+        raf = requestAnimationFrame(sync);
+        return ()=>cancelAnimationFrame(raf);
+    }, [
+        phase
+    ]);
     const t = (0, __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$HeroMotion$2f$clock$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useIntroClock"])(phase === "playing");
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
         if (phase === "playing" && t >= __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$HeroMotion$2f$clock$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TOTAL"]) finish();
@@ -1761,6 +1796,61 @@ function HeroMotion() {
         },
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "heromotion__field",
+                "aria-hidden": "true",
+                ref: fieldRef,
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "heromotion__breath",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "glow glow--1"
+                            }, void 0, false, {
+                                fileName: "[project]/components/HeroMotion/HeroMotion.tsx",
+                                lineNumber: 205,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "glow glow--2"
+                            }, void 0, false, {
+                                fileName: "[project]/components/HeroMotion/HeroMotion.tsx",
+                                lineNumber: 206,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "glow glow--3"
+                            }, void 0, false, {
+                                fileName: "[project]/components/HeroMotion/HeroMotion.tsx",
+                                lineNumber: 207,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "glow glow--4"
+                            }, void 0, false, {
+                                fileName: "[project]/components/HeroMotion/HeroMotion.tsx",
+                                lineNumber: 208,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/components/HeroMotion/HeroMotion.tsx",
+                        lineNumber: 204,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "grain"
+                    }, void 0, false, {
+                        fileName: "[project]/components/HeroMotion/HeroMotion.tsx",
+                        lineNumber: 210,
+                        columnNumber: 9
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/components/HeroMotion/HeroMotion.tsx",
+                lineNumber: 203,
+                columnNumber: 7
+            }, this),
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "heromotion__canvas",
                 /* role="img" belongs on the canvas, not on the wrapper. On the wrapper
            it would make the whole subtree presentational and take the Skip
@@ -1780,12 +1870,12 @@ function HeroMotion() {
                     L: fit.layout
                 }, void 0, false, {
                     fileName: "[project]/components/HeroMotion/HeroMotion.tsx",
-                    lineNumber: 166,
+                    lineNumber: 229,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/components/HeroMotion/HeroMotion.tsx",
-                lineNumber: 150,
+                lineNumber: 213,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1798,13 +1888,13 @@ function HeroMotion() {
                 children: "Skip intro"
             }, void 0, false, {
                 fileName: "[project]/components/HeroMotion/HeroMotion.tsx",
-                lineNumber: 169,
+                lineNumber: 232,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/components/HeroMotion/HeroMotion.tsx",
-        lineNumber: 144,
+        lineNumber: 188,
         columnNumber: 5
     }, this);
 }
@@ -8578,6 +8668,10 @@ function HeroBreath() {
                 field.style.opacity = String(0.86 + v * 0.14);
             }
             if (dot) dot.style.transform = `scale(${1.04 - v * DOT_SCALE})`;
+            /* Published so a second copy of the field can breathe in step. The intro
+         overlay paints its own instance of the background; if that one did not
+         respire with this one, the moment the overlay lifted would carry a
+         small scale pop in the glows. */ document.documentElement.style.setProperty("--breath", v.toFixed(4));
         };
         // Reduced motion: hold mid-breath rather than freezing at an extreme.
         if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {

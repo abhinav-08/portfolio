@@ -57,6 +57,7 @@ export default function HeroMotion() {
     scale: 1,
   });
   const dismissed = useRef(false);
+  const fieldRef = useRef<HTMLDivElement>(null);
 
   /* Decide once the motion preference is known. Anything that disqualifies the
      intro resolves straight to `done`, which renders nothing at all.
@@ -122,6 +123,49 @@ export default function HeroMotion() {
     };
   }, [phase]);
 
+  /* Put the overlay's copy of the field in phase with the page's.
+     `.bg-field`'s glows started their 15–24s drifts at first paint; this copy
+     mounts after hydration, so left alone it runs the same keyframes about
+     600ms behind — enough to put the gold glow 26px wider and 12px off, which
+     is exactly the shift the copy exists to remove. Copying `currentTime`
+     across is exact, and once matched they stay matched: both run on the same
+     document timeline at the same rate.
+
+     On a frame, not in a layout effect: the elements have only just been
+     inserted, and their CSS animations do not exist yet when layout effects
+     run — `getAnimations()` comes back empty and the sync silently does
+     nothing. Retried for a few frames in case the first one is still early. */
+  useEffect(() => {
+    if (phase !== "playing") return;
+    let raf = 0;
+    let tries = 0;
+    const sync = () => {
+      const host = fieldRef.current;
+      if (!host) return;
+      let pending = false;
+      for (const dst of Array.from(
+        host.querySelectorAll<HTMLElement>("[class*='glow'], .grain"),
+      )) {
+        const sel =
+          ".bg-field " +
+          dst.className
+            .split(" ")
+            .filter(Boolean)
+            .map((c) => "." + c)
+            .join("");
+        const src = document.querySelector<HTMLElement>(sel);
+        const from = src?.getAnimations?.()[0];
+        const to = dst.getAnimations?.()[0];
+        /* .glow--4 is deliberately unanimated — no counterpart, nothing to do. */
+        if (from && (!to || from.startTime === null)) pending = true;
+        if (from && to && from.startTime !== null) to.startTime = from.startTime;
+      }
+      if (pending && ++tries < 6) raf = requestAnimationFrame(sync);
+    };
+    raf = requestAnimationFrame(sync);
+    return () => cancelAnimationFrame(raf);
+  }, [phase]);
+
   const t = useIntroClock(phase === "playing");
 
   useEffect(() => {
@@ -147,6 +191,25 @@ export default function HeroMotion() {
          independently of the canvas, and a var() hex cannot be interpolated. */
       style={{ background: `rgba(14, 13, 11, ${1 - ground})` }}
     >
+      {/* A second instance of the page's own glow field, not an approximation
+          of it. The overlay used to lift a flat slab of --bg off a page with a
+          warm, drifting gradient underneath, and the whole frame changed colour
+          at the handover. Copying the gradient statically would not have fixed
+          it: the glows drift by a fifth of their own size over 15–19s, so a
+          frozen copy is only ever right at one instant. This is the same
+          markup on the same CSS keyframes, mounted at the same time, so it is
+          in phase by construction — the ground behind the card and the ground
+          behind the hero are the same picture. */}
+      <div className="heromotion__field" aria-hidden="true" ref={fieldRef}>
+        <div className="heromotion__breath">
+          <div className="glow glow--1" />
+          <div className="glow glow--2" />
+          <div className="glow glow--3" />
+          <div className="glow glow--4" />
+        </div>
+        <div className="grain" />
+      </div>
+
       <div
         className="heromotion__canvas"
         /* role="img" belongs on the canvas, not on the wrapper. On the wrapper

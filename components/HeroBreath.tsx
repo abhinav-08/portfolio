@@ -41,6 +41,11 @@ export default function HeroBreath() {
         field.style.opacity = String(0.86 + v * 0.14);
       }
       if (dot) dot.style.transform = `scale(${1.04 - v * DOT_SCALE})`;
+      /* Published so a second copy of the field can breathe in step. The intro
+         overlay paints its own instance of the background; if that one did not
+         respire with this one, the moment the overlay lifted would carry a
+         small scale pop in the glows. */
+      document.documentElement.style.setProperty("--breath", v.toFixed(4));
     };
 
     // Reduced motion: hold mid-breath rather than freezing at an extreme.

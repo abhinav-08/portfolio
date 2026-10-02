@@ -4233,6 +4233,26 @@ button {
   overflow: hidden;
 }
 
+.heromotion__field {
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  overflow: hidden;
+}
+
+.heromotion__breath {
+  transform: scale(calc(1 + var(--breath, .5) * .035));
+  opacity: calc(.86 + var(--breath, .5) * .14);
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
 .heromotion__canvas {
   transform-origin: center;
   will-change: transform;
