@@ -6284,6 +6284,8 @@ function normalise(hits) {
     ()=>labFeature,
     "labIntro",
     ()=>labIntro,
+    "labSkill",
+    ()=>labSkill,
     "marqueeTerms",
     ()=>marqueeTerms,
     "notes",
@@ -6773,6 +6775,42 @@ const lab = [
         blurb: "NER + semantic tagging to parse intent from raw search queries."
     }
 ];
+const labSkill = {
+    status: "Shipped",
+    kicker: "Claude skill",
+    title: "Repo deep dive",
+    blurb: "A skill for Claude that reads a codebase and turns it into an interactive service map \u2014 services, stages, steps and decisions, each node carrying its logic, its external calls, its data flow and a confidence tag. Output is one offline HTML file. It will also write an interview prep pack from what it found.",
+    steps: [
+        {
+            name: "Scope",
+            body: "Agree the repos, start from their entry points."
+        },
+        {
+            name: "Fact register",
+            body: "Every claim gets file:line evidence and a confidence tag."
+        },
+        {
+            name: "Model",
+            body: "Write the map\u2019s data file."
+        },
+        {
+            name: "Build & check",
+            body: "Build the page, run automated checks that produce screenshots."
+        },
+        {
+            name: "Deliver",
+            body: "Hand over the HTML, or publish it as an artifact."
+        }
+    ],
+    output: "service-maps/<repo>/out/download/<repo>-service-map.html",
+    stack: [
+        "Python 3 (stdlib only)",
+        "Playwright \u00b7 Chromium",
+        "HTML / JS template"
+    ],
+    install: "claude plugin marketplace add abhinav-08/repo-deep-dive",
+    repo: "https://github.com/abhinav-08/repo-deep-dive"
+};
 const labClosing = "Some become production features. Some stay internal tools. Some just teach me something.";
 const archiveIntro = "Two kinds of writing: engineering notes I published as I worked things out, and papers written with a proper method section.";
 const notes = [

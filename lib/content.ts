@@ -352,117 +352,77 @@ export const skillsClosing = "Anything on this page, I can walk you through in t
 
 /* -------------------------------------------------------------- lab */
 
-export type LabStatus = "In progress" | "Active" | "Research";
+/* ------------------------------------------------------------ projects */
 
-export interface LabItem {
-  status: LabStatus;
-  title: string;
-  blurb: string;
-}
-
-/** One step in the "how it connects" chain. */
-export interface ChainNode {
-  label: string;
-  sub: string;
-  /** The MCP connector — the one link the whole section is about. */
-  highlight?: boolean;
-}
-
-/** A line of the illustrative MCP session. */
-export type SessionTurn =
-  | { kind: "tool"; prompt: string; tool: string; fields: Array<[string, string]>; ack: string }
-  | { kind: "prose"; prompt: string; answer: string };
-
-export interface LabFeature {
-  status: LabStatus;
-  kicker: string;
-  title: string;
-  blurb: string;
-  chain: ChainNode[];
-  capabilities: Array<{ title: string; body: string }>;
-  /** Comma-separated on purpose — split at render, so it stays one value. */
-  stack: string;
-  endpoint: string;
-  session: SessionTurn[];
-  tools: string[];
-  sessionNote: string;
-}
+export type ProjectStatus = "Shipped" | "In progress" | "Active" | "Research";
 
 /**
- * The lab's headline. The session below is *illustrative* — a written example
- * of the shape of an exchange, not a recorded transcript and not a live
- * terminal. `sessionNote` says so on the page, and it should keep saying so.
+ * One shape for every project, because the Lab is one row of panels now and a
+ * panel cannot be four times the height of the one beside it.
+ *
+ * `flow` is the project's own pipeline in its own terms; `category` is the
+ * word on the spine's meta row. Order is the order they appear, and the
+ * shipped, installable one leads.
  */
-export const labFeature: LabFeature = {
-  status: "In progress",
-  kicker: "Flagship",
-  title: "Natural query",
-  blurb:
-    "An Elasticsearch agent that speaks plain English. Ask it a question and it plans the query, runs it against my live cluster and answers. Describe a schema and it writes the mapping and creates the index — no console, no JSON by hand.",
-  chain: [
-    { label: "Plain English", sub: "prompt" },
-    { label: "Agent", sub: "plan · tools" },
-    { label: "MCP connector", sub: "elastic · custom", highlight: true },
-    { label: "Elastic cluster", sub: "live index" },
-  ],
-  capabilities: [
-    {
-      title: "Writes mappings",
-      body: "Creates indices and field types straight on the cluster.",
-    },
-    { title: "Answers in English", body: "Reads back results instead of raw hit arrays." },
-    { title: "Tool-scoped", body: "Every cluster action is an explicit MCP tool call." },
-  ],
-  stack: "Java 17, Spring Boot 3.x, MCP Java SDK, Elasticsearch 8.x",
-  endpoint: "mcp://elastic · connected",
-  session: [
-    {
-      kind: "tool",
-      prompt:
-        "make me an index for the product catalog, descriptions should be semantically searchable",
-      tool: "create_index · product-catalog",
-      fields: [
-        ["title", "text + keyword"],
-        ["price", "scaled_float"],
-        ["description", "dense_vector[768] cosine"],
-      ],
-      ack: "acknowledged: true",
-    },
-    {
-      kind: "prose",
-      prompt: "which categories lost the most impressions last week?",
-      answer:
-        "Footwear is down 18%, mostly on \u201crunning shoes\u201d. Two of its top sellers dropped out of the first page after the last reindex.",
-    },
-  ],
-  tools: [
-    "search_index",
-    "create_index",
-    "put_mapping",
-    "list_indices",
-    "explain_query",
-    "cluster_health",
-  ],
-  sessionNote:
-    "Illustrative exchange — the connector exposes search, mapping and index tools to the agent.",
-};
+export interface Project {
+  status: ProjectStatus;
+  category: string;
+  title: string;
+  blurb: string;
+  flow: string[];
+  stack: string[];
+  href?: string;
+  hrefLabel?: string;
+}
+
+export const projects: Project[] = [
+  {
+    status: "Shipped",
+    category: "Claude skill",
+    title: "Repo deep dive",
+    blurb:
+      "A skill for Claude that reads a codebase and turns it into an interactive service map \u2014 services, stages, steps and decisions, each node carrying its logic, its external calls, its data flow and a confidence tag. Output is one offline HTML file. It will also write an interview prep pack from what it found.",
+    flow: ["Scope", "Fact register", "Model", "Build & check", "Deliver"],
+    stack: ["Python 3 (stdlib only)", "Playwright \u00b7 Chromium", "HTML / JS template"],
+    href: "https://github.com/abhinav-08/repo-deep-dive",
+    hrefLabel: "View on GitHub",
+  },
+  {
+    status: "In progress",
+    category: "Flagship",
+    title: "Natural query",
+    blurb:
+      "An Elasticsearch agent that speaks plain English. Ask it a question and it plans the query, runs it against my live cluster and answers. Describe a schema and it writes the mapping and creates the index \u2014 no console, no JSON by hand.",
+    flow: ["Plain English", "Agent", "MCP connector", "Elastic cluster"],
+    stack: ["Java 17", "Spring Boot 3.x", "MCP Java SDK", "Elasticsearch 8.x"],
+  },
+  {
+    status: "Active",
+    category: "Ranking",
+    title: "LTR rescoring",
+    blurb:
+      "Experiments with XGBRanker rescore pipelines for search relevance tuning \u2014 feature logging, training on click data, and the judgement work that decides what better means.",
+    flow: ["Feature log", "Train", "Rescore", "Judge"],
+    stack: ["XGBoost \u00b7 XGBRanker", "Elasticsearch rescore"],
+  },
+  {
+    /* The handoff ships placeholder copy for this one and says to replace it.
+       This is the real description — and the demo it points at is on this very
+       page, so the link is an anchor rather than an outbound jump. */
+    status: "Research",
+    category: "Query understanding",
+    title: "Query parsing",
+    blurb:
+      "NER and semantic tagging to parse intent out of raw search queries \u2014 turning what people type into fields a search engine can use. The live demo further up this page is this work, running in your browser on a small catalogue.",
+    flow: ["Parse", "Recognise", "Rewrite", "Search"],
+    stack: ["Rule-based NER", "Synonym expansion", "BM25"],
+    href: "#search",
+    hrefLabel: "Try the live demo",
+  },
+];
 
 export const labIntro =
   "Right now that means one thing: giving Elasticsearch a conversation layer. An agent that holds a real connection to my cluster, understands what I\u2019m asking in English, and does the indexing work itself.";
-
-/** Everything that isn't the flagship. */
-export const lab: LabItem[] = [
-  {
-    status: "Active",
-    title: "LTR Rescoring",
-    blurb: "Experiments with XGBRanker rescore pipelines for search relevance tuning.",
-  },
-  {
-    status: "Research",
-    title: "Query Understanding",
-    blurb: "NER + semantic tagging to parse intent from raw search queries.",
-  },
-];
 
 export const labClosing =
   "Some become production features. Some stay internal tools. Some just teach me something.";

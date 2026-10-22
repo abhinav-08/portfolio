@@ -4,9 +4,7 @@ import {
   archiveVideo,
   coreSkills,
   instagramTiles,
-  lab,
   labClosing,
-  labFeature,
   labIntro,
   notes,
   papers,
@@ -14,6 +12,7 @@ import {
   skillsIntro,
   toolGroups,
 } from "@/lib/content";
+import ProjectPanels from "@/components/ProjectPanels";
 import { identity, socials } from "@/lib/site";
 import { num } from "@/lib/sections";
 
@@ -145,11 +144,6 @@ export function Skills() {
 /* ================================================================ LAB */
 
 export function Lab() {
-  const stack = labFeature.stack
-    .split(",")
-    .map((t) => t.trim())
-    .filter(Boolean);
-
   return (
     <section className="section" id="lab">
       <p className="eyebrow" data-reveal="0">
@@ -166,119 +160,9 @@ export function Lab() {
         <p className="sechead__intro">{labIntro}</p>
       </div>
 
-      <div className="cellgrid feature" data-reveal="120">
-        <div className="feature__main">
-          <div className="feature__badges">
-            <span className="status status--live">{labFeature.status}</span>
-            <span className="feature__kicker">{labFeature.kicker}</span>
-          </div>
-
-          <div>
-            <h3 className="feature__title">{labFeature.title}</h3>
-            <p className="feature__blurb">{labFeature.blurb}</p>
-          </div>
-
-          <div>
-            <p className="minilabel">How it connects</p>
-            {/* Each arrow lives inside its own node's wrapper. As a sibling it
-                would strand at the end of a wrapped row, pointing at nothing. */}
-            <div className="chain">
-              {labFeature.chain.map((n, i) => (
-                <div className="chain__link" key={n.label}>
-                  {i > 0 && (
-                    <span className="chain__arrow" aria-hidden="true">
-                      →
-                    </span>
-                  )}
-                  <div className={`chain__node${n.highlight ? " is-mcp" : ""}`}>
-                    <span className="chain__label">{n.label}</span>
-                    <span className="chain__sub">{n.sub}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="cellgrid captiles">
-            {labFeature.capabilities.map((c) => (
-              <div className="captile" key={c.title}>
-                <p className="captile__title">{c.title}</p>
-                <p className="captile__body">{c.body}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="stackchips">
-            {stack.map((t) => (
-              <span className="stackchip" key={t}>
-                {t}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        <div className="session">
-          <div className="session__bar">
-            <span>Session</span>
-            <span className="session__endpoint">{labFeature.endpoint}</span>
-          </div>
-
-          <div className="session__well">
-            {labFeature.session.map((turn, i) => (
-              <div className={`session__turn${i > 0 ? " is-later" : ""}`} key={turn.prompt}>
-                <p className="session__prompt">
-                  <span className="session__caret" aria-hidden="true">
-                    ›
-                  </span>
-                  {turn.prompt}
-                </p>
-
-                <div className="session__out">
-                  {turn.kind === "tool" ? (
-                    <>
-                      <p className="session__tool">{turn.tool}</p>
-                      {turn.fields.map(([field, type]) => (
-                        <p className="session__field" key={field}>
-                          <span className="session__fieldname">{field}</span>
-                          {type}
-                        </p>
-                      ))}
-                      <p className="session__ack">{turn.ack}</p>
-                    </>
-                  ) : (
-                    /* Prose, not mono: the agent replying in English rather
-                       than in a hit array is the whole claim. */
-                    <p className="session__answer">{turn.answer}</p>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div>
-            <p className="minilabel">Tools exposed</p>
-            <div className="toolgrid">
-              {labFeature.tools.map((t) => (
-                <span className="toolchip" key={t}>
-                  {t}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <p className="session__note">{labFeature.sessionNote}</p>
-        </div>
-      </div>
-
-      <div className="cellgrid lab__grid" data-reveal="160">
-        {lab.map((item) => (
-          <div className="lab__cell" key={item.title}>
-            <span className="status status--muted">{item.status}</span>
-            <h4 className="lab__title">{item.title}</h4>
-            <p className="lab__blurb">{item.blurb}</p>
-          </div>
-        ))}
-      </div>
+      {/* One row of expanding panels, one open at a time — see ProjectPanels
+          for the geometry and the autoplay. */}
+      <ProjectPanels />
 
       <p className="section__note" data-reveal="200">
         {labClosing}

@@ -2482,320 +2482,6 @@ button {
   margin: 0 0 14px;
 }
 
-/* ---------------------------------------------------- feature card -- */
-
-.feature {
-  grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
-  margin-top: clamp(28px, 3.4vw, 52px);
-}
-
-.feature__main,
-.session {
-  display: flex;
-  flex-direction: column;
-  padding: clamp(26px, 2.6vw, 44px);
-}
-
-.feature__main {
-  gap: 26px;
-}
-
-.feature__badges {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
-}
-
-.feature__kicker {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--text-32);
-}
-
-/* The pulsing dot is the only animation in this section — it is what marks
-   the one project that is still moving. */
-.status--live::before {
-  animation: pulse 2.4s ease-in-out infinite;
-}
-
-.status--muted {
-  border-color: var(--text-20);
-  color: var(--text-55);
-}
-.status--muted::before {
-  background: var(--text-40);
-}
-
-.feature__title {
-  font-family: var(--font-serif);
-  font-size: clamp(32px, 3.4vw, 46px);
-  font-weight: 500;
-  line-height: 1.08;
-  margin: 0;
-}
-
-.feature__blurb {
-  font-size: 15.5px;
-  line-height: 1.7;
-  color: var(--text-60);
-  max-width: 52ch;
-  text-wrap: pretty;
-  margin: 14px 0 0;
-}
-
-/* ------------------------------------------------- connector chain -- */
-
-/* Two-up, not auto-fit. The column is ~600px, where `minmax(168px, 1fr)`
-   resolves to three tracks and strands the fourth node alone on a second row.
-   Four nodes only ever look right as 4×1 or 2×2. */
-.chain {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
-@media (min-width: 1600px) {
-  .chain {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-
-/* The arrow belongs to the node that follows it. As a standalone sibling it
-   strands at the end of a wrapped row, pointing at nothing. */
-.chain__link {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
-.chain__arrow {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--accent-40);
-  flex-shrink: 0;
-}
-
-.chain__node {
-  flex: 1;
-  min-width: 0;
-  border: 1px solid var(--text-16);
-  background: var(--surface-tile);
-  padding: 13px 15px;
-}
-
-.chain__node.is-mcp {
-  border-color: var(--accent-40);
-  background: linear-gradient(180deg, rgba(200, 169, 110, 0.12), var(--surface-tile));
-}
-
-.chain__label {
-  display: block;
-  font-size: 14px;
-  color: var(--text-80);
-}
-.chain__node.is-mcp .chain__label {
-  color: var(--accent);
-}
-
-.chain__sub {
-  display: block;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  color: var(--text-35);
-  margin-top: 4px;
-}
-
-/* --------------------------------------------------- capability tiles */
-
-.captiles {
-  grid-template-columns: repeat(auto-fit, minmax(min(190px, 100%), 1fr));
-}
-
-.captile {
-  padding: 16px 18px;
-  background: var(--surface-tile);
-}
-
-.captile__title {
-  font-size: 14px;
-  color: var(--text-80);
-  margin: 0;
-}
-
-.captile__body {
-  font-size: 13px;
-  line-height: 1.6;
-  color: var(--text-45);
-  text-wrap: pretty;
-  margin: 6px 0 0;
-}
-
-.stackchips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  /* Pins the stack to the bottom so both columns end on a line. */
-  margin-top: auto;
-}
-
-.stackchip {
-  border: 1px solid var(--text-16);
-  padding: 6px 12px;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  color: var(--text-45);
-}
-
-/* ------------------------------------------------------ session panel */
-
-.session {
-  gap: 18px;
-  background: var(--surface-alt);
-}
-
-.session__bar {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 16px;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
-  color: var(--text-35);
-}
-
-.session__endpoint {
-  letter-spacing: 0.08em;
-  text-transform: none;
-  color: var(--text-26);
-}
-
-.session__well {
-  border: 1px solid var(--hairline);
-  background: var(--well);
-  padding: 20px;
-  font-family: var(--font-mono);
-  font-size: 12.5px;
-  line-height: 1.75;
-}
-
-.session__turn.is-later {
-  border-top: 1px solid var(--hairline-10);
-  margin-top: 16px;
-  padding-top: 16px;
-}
-
-.session__prompt {
-  color: var(--text-80);
-  text-wrap: pretty;
-  margin: 0;
-}
-
-.session__caret {
-  color: var(--accent);
-  margin-right: 8px;
-}
-
-.session__out {
-  padding-left: 20px;
-  border-left: 1px solid var(--hairline);
-  margin-top: 10px;
-}
-
-.session__tool {
-  color: var(--accent);
-  opacity: 0.75;
-  margin: 0;
-}
-
-.session__field {
-  color: var(--text-35);
-  margin: 0;
-}
-
-/* "description" is itself 11 characters — at 11ch the longest field name ran
-   straight into its type with no gap. */
-.session__fieldname {
-  display: inline-block;
-  min-width: 13ch;
-}
-
-.session__ack {
-  color: #88a06a;
-  margin: 6px 0 0;
-}
-
-/* Prose, not mono. The agent answering in English rather than in a hit array
-   is the claim the whole panel is making. */
-.session__answer {
-  font-family: var(--font-sans);
-  font-size: 14px;
-  line-height: 1.65;
-  color: var(--text-60);
-  text-wrap: pretty;
-  margin: 0;
-}
-
-.toolgrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(148px, 100%), 1fr));
-  gap: 8px;
-}
-
-.toolchip {
-  border: 1px solid var(--hairline);
-  padding: 10px 12px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--text-50);
-}
-
-.session__note {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  line-height: 1.6;
-  color: var(--text-26);
-  margin: auto 0 0;
-  padding-top: 18px;
-}
-
-/* --------------------------------------------------- secondary cards */
-
-.lab__grid {
-  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
-  margin-top: clamp(28px, 3.4vw, 52px);
-}
-
-.lab__cell {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: clamp(22px, 2.2vw, 32px);
-}
-
-.lab__title {
-  font-family: var(--font-serif);
-  font-size: clamp(24px, 2.2vw, 30px);
-  font-weight: 500;
-  line-height: 1.15;
-  margin: 0;
-}
-
-.lab__blurb {
-  font-size: 15px;
-  line-height: 1.7;
-  color: var(--text-50);
-  text-wrap: pretty;
-  margin: 0;
-}
-
 /* ============================================================ ARCHIVE */
 
 .block {
@@ -3330,11 +3016,6 @@ button {
   .section__head {
     max-width: 20ch;
   }
-  /* The feature card's two columns stop working once the session well has to
-     wrap its mono lines — below this it reads as one story, then its console. */
-  .feature {
-    grid-template-columns: 1fr;
-  }
   .drawer__panel {
     width: 100%;
   }
@@ -3486,35 +3167,12 @@ button {
   .note__meta::before {
     content: attr(data-idx) " · ";
   }
-  .session__well {
-    padding: 16px 14px;
-    font-size: 11.5px;
-  }
-  /* Keep the name on the same line as its type — stacking them read as six
-     unrelated values rather than three field/type pairs. The column just
-     stops being a column. */
-  .session__fieldname {
-    min-width: 0;
-    margin-right: 12px;
-    color: var(--text-45);
-  }
-  /* One node per row. At two-up the box is ~115px wide and "MCP connector"
-     breaks across three lines. */
-  .chain {
-    grid-template-columns: 1fr;
-  }
-  .toolgrid {
-    grid-template-columns: repeat(auto-fit, minmax(min(110px, 100%), 1fr));
-  }
   .video__side {
     padding-top: 0;
   }
   .core__card,
   .tools__cell {
     padding: 22px 18px 24px;
-  }
-  .lab__cell {
-    padding: 26px 20px 28px;
   }
   .section__head {
     max-width: none;
@@ -3865,4 +3523,369 @@ button {
 .heromotion__skip:focus-visible {
   color: var(--accent);
   border-color: var(--accent-40);
+}
+
+/* ================================================== LAB · PROJECT PANELS */
+
+/* `ppanel`, not `panel`: the search demo owns `.panel`, `.panel__title` and a
+   dozen more. Reusing the name restyled that component silently — the same
+   trap `.rail` set earlier in this section's life. */
+
+/* One row, one panel open. Geometry and motion from the handoff; colour from
+   the site's own tokens rather than the handoff's near-identical set, so this
+   section's gold is the same gold as every other section's. */
+.ppanels {
+  display: flex;
+  gap: 12px;
+  height: 540px;
+  margin-top: clamp(28px, 3.4vw, 52px);
+  /* Written by the component on every resize — the open panel's inner width,
+     so the copy can be laid out at its final measure before the panel has
+     finished growing into it. */
+  --open-w: 740px;
+}
+
+.ppanel {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  background: #1a1916;
+  border: 1px solid var(--hairline-10);
+  transition:
+    flex-grow 0.8s cubic-bezier(0.7, 0, 0.2, 1),
+    background 0.5s ease,
+    border-color 0.5s ease;
+}
+
+.ppanel.is-open {
+  flex-grow: 7;
+  background: #151411;
+  border-color: var(--accent-40);
+}
+
+/* The control that opens a panel. Covers the strip while shut; once open it
+   stops taking the pointer so the content beneath — the CTA especially — is
+   clickable, and the row still reacts to hover through the panel itself. */
+.ppanel__hit {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.ppanel.is-open .ppanel__hit {
+  pointer-events: none;
+}
+.ppanel__hit:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: -3px;
+}
+
+/* ---- collapsed strip ---- */
+
+.ppanel__spine {
+  position: absolute;
+  inset: 0;
+  padding: 28px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+.ppanel.is-open .ppanel__spine {
+  opacity: 0;
+}
+
+.ppanel__n {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--accent);
+}
+
+.ppanel__spinetitle {
+  font-family: var(--font-serif);
+  font-size: 34px;
+  color: var(--text-80);
+  white-space: nowrap;
+  /* Reads bottom-to-top, so the eye travels up the strip to the open panel
+     rather than away from it. */
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+.ppanel__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--accent);
+}
+/* The one piece of colour the site does not already own. Four states that are
+   otherwise only distinguishable by reading, and the dot is the fastest tell
+   on a strip 100px wide. */
+.ppanel[data-status="Shipped"] .ppanel__dot {
+  background: #8fbf8a;
+}
+.ppanel[data-status="Active"] .ppanel__dot {
+  background: #7fa8d4;
+}
+.ppanel[data-status="Research"] .ppanel__dot {
+  background: #b49ad4;
+}
+
+/* ---- open content ---- */
+
+.ppanel__open {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--open-w);
+  padding: 44px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  opacity: 0;
+  transform: translateX(-24px);
+  pointer-events: none;
+  /* No delay on the way out: the content must be gone before the panel starts
+     narrowing, or it is briefly wider than the box holding it. */
+  transition:
+    opacity 0.5s ease,
+    transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.ppanel.is-open .ppanel__open {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+  transition-delay: 0.35s;
+}
+
+.ppanel__meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.ppanel__metan {
+  color: var(--accent);
+}
+.ppanel__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--text-20);
+  border-radius: 999px;
+  padding: 5px 12px;
+  color: var(--text-80);
+}
+.ppanel__pill .ppanel__dot {
+  width: 6px;
+  height: 6px;
+}
+.ppanel__cat {
+  color: var(--text-50);
+}
+
+.ppanel__title {
+  font-family: var(--font-serif);
+  font-size: clamp(40px, 4.4vw, 64px);
+  font-weight: 500;
+  line-height: 1;
+  margin: 0;
+  color: var(--text);
+}
+
+.ppanel__blurb {
+  margin: 0;
+  max-width: 620px;
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--text-70);
+  text-wrap: pretty;
+}
+
+.ppanel__flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+/* The arrow lives inside its own node's wrapper. As a sibling it strands at
+   the end of a wrapped row, pointing at nothing. */
+.ppanel__flowitem {
+  display: inline-flex;
+  align-items: center;
+}
+.ppanel__arrow {
+  color: var(--accent);
+  padding: 0 8px;
+  font-size: 12px;
+}
+.ppanel__chip {
+  border: 1px solid var(--accent-40);
+  padding: 7px 11px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-80);
+  white-space: nowrap;
+}
+
+.ppanel__foot {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.ppanel__stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.ppanel__tag {
+  border: 1px solid var(--hairline);
+  padding: 4px 9px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-50);
+  white-space: nowrap;
+}
+
+.ppanel__cta {
+  flex-shrink: 0;
+  background: var(--accent);
+  color: var(--bg);
+  padding: 11px 18px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: background 0.3s ease;
+}
+.ppanel__cta:hover,
+.ppanel__cta:focus-visible {
+  background: var(--accent-hi);
+}
+
+.ppanel__nolink {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-35);
+}
+
+/* ---- autoplay progress ---- */
+
+.ppanel__bar {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 0;
+  background: var(--accent);
+  z-index: 3;
+  transition-property: width;
+  transition-timing-function: linear;
+}
+.ppanel__bar.is-running {
+  width: 100%;
+}
+
+/* ---- accordion below the row's working width ---- */
+
+/* Four strips plus an open panel need room: at 900px the open one is 556px
+   wide holding 464px of copy, and the strips are 81px — too narrow for a
+   rotated title to sit in comfortably. 1023 is where the rest of the site
+   already turns its two-column sections into one, so the row stops here too
+   and becomes a stacked accordion. */
+@media (max-width: 1023px) {
+  .ppanels {
+    flex-direction: column;
+    height: auto;
+    gap: 8px;
+  }
+  .ppanel {
+    flex: 0 0 auto;
+    min-height: 72px;
+    transition:
+      background 0.4s ease,
+      border-color 0.4s ease;
+  }
+  .ppanel.is-open {
+    flex: 1 1 auto;
+  }
+  .ppanel__spine {
+    position: relative;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 16px;
+    padding: 0 22px;
+    min-height: 72px;
+  }
+  .ppanel.is-open .ppanel__spine {
+    display: none;
+  }
+  /* Taken out of flow, not just faded: at opacity 0 the content still
+     occupies its full height, so every panel in the column stood fully open
+     and the accordion was four expanded panels in a row. */
+  .ppanel:not(.is-open) .ppanel__open {
+    display: none;
+  }
+  .ppanel__spinetitle {
+    writing-mode: horizontal-tb;
+    transform: none;
+    font-size: 26px;
+  }
+  .ppanel__dot {
+    margin-left: auto;
+  }
+  .ppanel__open {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    padding: 26px 22px 30px;
+    gap: 18px;
+    /* Height is content-driven here, so the copy can reflow freely and the
+       measured --open-w has nothing to do. */
+    transform: none;
+  }
+  .ppanel.is-open .ppanel__open {
+    transition-delay: 0.1s;
+  }
+  .ppanel__blurb {
+    font-size: 15px;
+  }
+  .ppanel__foot {
+    align-items: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ppanel,
+  .ppanel__spine,
+  .ppanel__open,
+  .ppanel__bar,
+  .ppanel__cta {
+    transition: none !important;
+  }
+  .ppanel__open {
+    transform: none;
+  }
+  /* Autoplay is already off; the bar would sit at zero and read as stalled. */
+  .ppanel__bar {
+    display: none;
+  }
 }
